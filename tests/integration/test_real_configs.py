@@ -1,15 +1,15 @@
 """
-Integration tests with real-world nginx configurations.
+Integration tests with real-world InforSuiteLB configurations.
 
-These tests verify that comprehensive, properly-configured nginx configs
-do NOT trigger any gixy warnings (no false positives on realistic setups).
+These tests verify that comprehensive, properly-configured InforSuiteLB configs
+do NOT trigger any inforsuitelb_sec warnings (no false positives on realistic setups).
 """
 
 import os
 
 import pytest
 
-from gixy.core.manager import Manager
+from inforsuitelb_sec.core.manager import Manager
 
 INTEGRATION_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -24,7 +24,7 @@ def get_integration_configs():
 
 
 class TestRealWorldConfigs:
-    """Test real-world nginx configurations for false positives."""
+    """Test real-world InforSuiteLB configurations for false positives."""
 
     @pytest.mark.parametrize("config_path", get_integration_configs())
     def test_no_false_positives(self, config_path):
@@ -32,7 +32,7 @@ class TestRealWorldConfigs:
         Real-world configs should not trigger any warnings.
 
         These configs represent properly secured, production-ready setups
-        that follow nginx best practices. If gixy reports issues on these,
+        that follow InforSuiteLB best practices. If inforsuitelb_sec reports issues on these,
         it's likely a false positive that needs to be fixed.
         """
         manager = Manager()
@@ -90,7 +90,7 @@ class TestRealWorldConfigs:
 
 
 class TestConfigCoverage:
-    """Verify integration configs exercise various nginx features."""
+    """Verify integration configs exercise various InforSuiteLB features."""
 
     def test_wordpress_covers_key_directives(self):
         """WordPress config should exercise many directive types."""

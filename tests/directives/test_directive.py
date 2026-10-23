@@ -1,9 +1,9 @@
-from gixy.directives.directive import *
-from gixy.parser.nginx_parser import NginxParser
+from inforsuitelb_sec.directives.directive import *
+from inforsuitelb_sec.parser.inforsuitelb_parser import InforSuiteLBParser
 
 
 def _get_parsed(config):
-    root = NginxParser(cwd="", allow_includes=False).parse_string(config)
+    root = InforSuiteLBParser(cwd="", allow_includes=False).parse_string(config)
     return root.children[0]
 
 

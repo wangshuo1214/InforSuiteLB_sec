@@ -1,6 +1,6 @@
-import gixy
-from gixy.core.variable import compile_script
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.core.variable import compile_script
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class http_splitting(Plugin):
@@ -18,7 +18,7 @@ class http_splitting(Plugin):
     """
 
     summary = "Possible HTTP-Splitting vulnerability."
-    severity = gixy.severity.HIGH
+    severity = inforsuitelb_sec.severity.HIGH
     description = (
         'Using variables that can contain "\\n" or "\\r" may lead to http injection.'
     )

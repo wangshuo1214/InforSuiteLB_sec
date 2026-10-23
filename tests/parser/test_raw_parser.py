@@ -1,4 +1,4 @@
-from gixy.parser.raw_parser import *
+from inforsuitelb_sec.parser.raw_parser import *
 
 
 def test_directive():

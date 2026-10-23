@@ -1,29 +1,29 @@
-"""Tests for graceful handling of malformed nginx configurations."""
+"""Tests for graceful handling of malformed InforSuiteLB configurations."""
 
 import io
 
 import pytest
 
-from gixy.core.exceptions import InvalidConfiguration
-from gixy.directives.block import LocationBlock, MapBlock, IfBlock
-from gixy.directives.directive import (
+from inforsuitelb_sec.core.exceptions import InvalidConfiguration
+from inforsuitelb_sec.directives.block import LocationBlock, MapBlock, IfBlock
+from inforsuitelb_sec.directives.directive import (
     AddHeaderDirective,
     SetDirective,
     RewriteDirective,
 )
-from gixy.parser.nginx_parser import NginxParser
+from inforsuitelb_sec.parser.inforsuitelb_parser import InforSuiteLBParser
 
 
 def _parse(config):
-    return NginxParser(cwd="", allow_includes=False).parse_string(config)
+    return InforSuiteLBParser(cwd="", allow_includes=False).parse_string(config)
 
 
 class TestMalformedDirectives:
-    """Directives with an argument count nginx itself rejects are skipped.
+    """Directives with an argument count InforSuiteLB itself rejects are skipped.
 
-    nginx would refuse to load such a config, so the directive can never
-    influence runtime behavior; gixy drops it with a warning instead of
-    crashing or hard-failing (nixpkgs' writeNginxConfig relies on this).
+    InforSuiteLB would refuse to load such a config, so the directive can never
+    influence runtime behavior; inforsuitelb_sec drops it with a warning instead of
+    crashing or hard-failing (nixpkgs' writeInforSuiteLBConfig relies on this).
     """
 
     def test_add_header_missing_value(self):
@@ -75,7 +75,7 @@ class TestMalformedDirectives:
 
 
 class TestMalformedBlocks:
-    """Blocks with an argument count nginx itself rejects are skipped."""
+    """Blocks with an argument count InforSuiteLB itself rejects are skipped."""
 
     def test_location_no_args(self):
         """location requires 1-2 args."""
@@ -226,13 +226,13 @@ class TestValidEdgeCases:
         assert if_block.value == "^/admin"
 
 
-class TestNginxRejectedDirectives:
-    """Regression tests for the nixpkgs writeNginxConfig scenario.
+class TestInforSuiteLBRejectedDirectives:
+    """Regression tests for the nixpkgs writeInforSuiteLBConfig scenario.
 
-    NixOS builds intentionally-broken configs (nixosTests.nginx) through
-    "gixy config" and expects gixy to survive them: nginx -t reports the
+    NixOS builds intentionally-broken configs (nixosTests.InforSuiteLB) through
+    "inforsuitelb_sec config" and expects inforsuitelb_sec to survive them: InforSuiteLB -t reports the
     breakage at runtime. See https://github.com/NixOS/nixpkgs/pull/568041
-    where gixy 0.2.54 crashed with IndexError on a bare "proxy_pass;".
+    where inforsuitelb_sec 0.2.54 crashed with IndexError on a bare "proxy_pass;".
     """
 
     NIXOS_CONFIG = """
@@ -255,8 +255,8 @@ class TestNginxRejectedDirectives:
         assert "proxy_pass" not in [child.name for child in location.children]
 
     def test_full_audit_does_not_crash_and_reports_nothing(self):
-        from gixy.core.config import Config
-        from gixy.core.manager import Manager
+        from inforsuitelb_sec.core.config import Config
+        from inforsuitelb_sec.core.manager import Manager
 
         with Manager(config=Config(allow_includes=False)) as yoda:
             yoda.audit("<test>", io.BytesIO(self.NIXOS_CONFIG.encode()))

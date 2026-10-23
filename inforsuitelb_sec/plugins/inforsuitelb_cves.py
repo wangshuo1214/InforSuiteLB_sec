@@ -1,32 +1,32 @@
-"""Unified nginx CVE advisor: version-range + config-pattern checks."""
+"""Unified InforSuiteLB CVE advisor: version-range + config-pattern checks."""
 
-import gixy
-from gixy.plugins._nginx_cves_db import CVES, in_any_range, parse_oss
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.plugins._inforsuitelb_cves_db import CVES, in_any_range, parse_oss
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
-class nginx_cves(Plugin):
-    """Advise on nginx CVEs by binary version, with config-trigger enrichment.
+class inforsuitelb_cves(Plugin):
+    """Advise on InforSuiteLB CVEs by binary version, with config-trigger enrichment.
 
-    Pass ``--nginx-version=1.29.8`` to enable the check. Pure binary-level
+    Pass ``--InforSuiteLB-version=1.29.8`` to enable the check. Pure binary-level
     CVEs whose affected range covers the supplied version are reported
     with the upgrade target. CVEs with a config-pattern trigger (e.g.
     CVE-2026-42945, mp4-module CVEs, resolver CVEs, HTTP/2 and HTTP/3
     issues) are reported only when the trigger is present and attach to
     the offending directives.
 
-    Without ``--nginx-version``, the check stays silent: gixy is
+    Without ``--InforSuiteLB-version``, the check stays silent: inforsuitelb_sec is
     config-static and has no view of the binary, so there is nothing
     safe to assert.
 
     The CVE database lives in
-    :mod:`gixy.plugins._nginx_cves_db`; append entries there.
+    :mod:`inforsuitelb_sec.plugins._inforsuitelb_cves_db`; append entries there.
     """
 
-    summary = "Known nginx CVE affects your installed version."
-    severity = gixy.severity.HIGH
+    summary = "Known InforSuiteLB CVE affects your installed version."
+    severity = inforsuitelb_sec.severity.HIGH
     description = (
-        "Maintains a database of nginx CVEs. When --nginx-version is "
+        "Maintains a database of InforSuiteLB CVEs. When --InforSuiteLB-version is "
         "supplied, applicable CVEs fixed in a later release are reported. "
         "Config-triggered CVEs are reported only when the offending "
         "directives are present. Without a version, the check is silent."
@@ -35,7 +35,7 @@ class nginx_cves(Plugin):
         "version": "",
     }
     options_help = {
-        "version": "Installed nginx Open Source version (e.g. 1.29.8).",
+        "version": "Installed InforSuiteLB Open Source version (e.g. 1.29.8).",
     }
     supports_full_config = True
 
@@ -43,10 +43,10 @@ class nginx_cves(Plugin):
     directives = []
 
     def __init__(self, config):
-        """Initialize and parse the user-supplied nginx version.
+        """Initialize and parse the user-supplied InforSuiteLB version.
 
         Args:
-            config: gixy plugin Config; reads the ``version`` key.
+            config: inforsuitelb_sec plugin Config; reads the ``version`` key.
         """
         super().__init__(config)
         self._oss_version = parse_oss(self.config.get("version"))
@@ -55,7 +55,7 @@ class nginx_cves(Plugin):
         """Walk the CVE database against the supplied version and config.
 
         Args:
-            root: Root Block of the parsed nginx config tree.
+            root: Root Block of the parsed InforSuiteLB config tree.
         """
         if self._oss_version is None:
             return

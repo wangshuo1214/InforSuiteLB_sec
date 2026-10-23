@@ -3,7 +3,7 @@
 
 [tool.bandit]
 # Exclude test files and vendored code
-exclude_dirs = ["tests", "gixy/core/sre_parse", "site"]
+exclude_dirs = ["tests", "inforsuitelb_sec/core/sre_parse", "site"]
 
 # Skip certain checks that have false positives in this codebase
 skips = [
@@ -12,4 +12,4 @@ skips = [
 ]
 
 # Target only the main source code
-targets = ["gixy"]
+targets = ["inforsuitelb_sec"]

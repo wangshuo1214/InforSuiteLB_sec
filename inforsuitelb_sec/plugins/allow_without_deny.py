@@ -1,5 +1,5 @@
-import gixy
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class allow_without_deny(Plugin):
@@ -9,7 +9,7 @@ class allow_without_deny(Plugin):
     """
 
     summary = "Found allow directive(s) without deny in the same context."
-    severity = gixy.severity.HIGH
+    severity = inforsuitelb_sec.severity.HIGH
     description = 'The "allow" directives should be typically accompanied by "deny all;" directive.'
     directives = ["allow"]
 

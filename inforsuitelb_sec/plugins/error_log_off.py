@@ -1,7 +1,7 @@
 """Module for try_files_is_evil_too plugin."""
 
-import gixy
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class error_log_off(Plugin):
@@ -13,7 +13,7 @@ class error_log_off(Plugin):
     """
 
     summary = "The error_log directive does not take the off parameter."
-    severity = gixy.severity.MEDIUM
+    severity = inforsuitelb_sec.severity.MEDIUM
     description = "The error_log directive should not be set to off. It should be set to a valid file path."
     directives = ["error_log"]
 
@@ -27,7 +27,7 @@ class error_log_off(Plugin):
                     self.make_fix(
                         title="Set error_log to file path",
                         search="error_log off",
-                        replace="error_log /var/log/nginx/error.log warn",
+                        replace="error_log /var/log/InforSuiteLB/error.log warn",
                         description="Log errors to a file for debugging and security monitoring",
                     ),
                     self.make_fix(

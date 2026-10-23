@@ -12,10 +12,10 @@ tools. It's natively consumed by:
 Example output:
     <?xml version="1.0" encoding="UTF-8"?>
     <checkstyle version="8.0">
-      <file name="/etc/nginx/nginx.conf">
+      <file name="/etc/inforsuitelb/inforsuitelb.conf">
         <error line="10" column="1" severity="error"
                message="[ssrf] SSRF vulnerability: reason"
-               source="gixy.ssrf"/>
+               source="inforsuitelb_sec.ssrf"/>
       </file>
     </checkstyle>
 """
@@ -26,9 +26,9 @@ from xml.etree.ElementTree import (  # nosemgrep: use-defused-xml  # nosec B405
     tostring,
 )  # We generate XML, not parse untrusted data
 
-from gixy.formatters.base import BaseFormatter
+from inforsuitelb_sec.formatters.base import BaseFormatter
 
-# Map gixy severity to Checkstyle severity
+# Map inforsuitelb_sec severity to Checkstyle severity
 # Checkstyle supports: error, warning, info, ignore
 SEVERITY_MAP = {
     "HIGH": "error",
@@ -39,7 +39,7 @@ SEVERITY_MAP = {
 
 
 class CheckstyleFormatter(BaseFormatter):
-    """Format gixy output as Checkstyle XML for CI/CD integration."""
+    """Format inforsuitelb_sec output as Checkstyle XML for CI/CD integration."""
 
     def format_reports(self, reports, stats):
         """Format all reports into Checkstyle XML.
@@ -90,7 +90,7 @@ class CheckstyleFormatter(BaseFormatter):
                     column="1",
                     severity=severity,
                     message=message,
-                    source=f"gixy.{plugin}",
+                    source=f"inforsuitelb_sec.{plugin}",
                 )
 
         # Generate XML with declaration

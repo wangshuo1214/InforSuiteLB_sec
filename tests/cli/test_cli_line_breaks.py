@@ -1,4 +1,4 @@
-"""Keep the version/help footer separate from the following shell prompt."""
+"""Keep the version/help footer separated cleanly from the following shell prompt."""
 
 import subprocess
 import sys
@@ -7,9 +7,9 @@ import pytest
 
 
 @pytest.mark.parametrize("flag", ["-v", "--version", "--help"])
-def test_cli_footer_has_separate_url_and_trailing_line_breaks(flag):
+def test_cli_footer_has_no_upstream_cta_and_trailing_line_break(flag):
     completed = subprocess.run(  # noqa: UP022 - capture_output requires Python 3.7+
-        [sys.executable, "-m", "gixy.cli.main", flag],
+        [sys.executable, "-m", "inforsuitelb_sec.cli.main", flag],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         universal_newlines=True,
@@ -17,7 +17,7 @@ def test_cli_footer_has_separate_url_and_trailing_line_breaks(flag):
 
     assert completed.returncode == 0
     assert completed.stderr == ""
-    assert completed.stdout.endswith(
-        "\n\nNGINX Extras by GetPageSpeed: packages for RHEL, Debian, and Ubuntu\n"
-        "https://www.getpagespeed.com/nginx-extras\n\n"
-    )
+    # Output ends with exactly one trailing newline, no upstream promotion footer.
+    assert completed.stdout.endswith("\n")
+    assert "GetPageSpeed" not in completed.stdout
+    assert "getpagespeed.com" not in completed.stdout

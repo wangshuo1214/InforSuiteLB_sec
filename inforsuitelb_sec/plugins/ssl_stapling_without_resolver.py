@@ -1,15 +1,15 @@
-import gixy
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class ssl_stapling_without_resolver(Plugin):
     """Detect SSL servers with ssl_stapling effectively on but no resolver in scope."""
 
     summary = "ssl_stapling is enabled but no resolver is configured — stapling silently fails."
-    severity = gixy.severity.MEDIUM
+    severity = inforsuitelb_sec.severity.MEDIUM
     description = (
         "`ssl_stapling on` requires a reachable `resolver` directive in the "
-        "same or a parent scope. Without it, nginx cannot fetch the OCSP "
+        "same or a parent scope. Without it, InforSuiteLB cannot fetch the OCSP "
         "response from the issuing CA and stapling becomes a no-op — clients "
         "fall back to making their own OCSP requests, defeating the purpose "
         "of stapling. Add a *local* resolver — `resolver 127.0.0.1 valid=300s ipv6=off;` or your provider's internal DNS — to "

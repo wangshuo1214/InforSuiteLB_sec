@@ -1,8 +1,8 @@
 #!/bin/bash
 # Run full test suite with Python 3.6 to catch compatibility issues
-# This hook is optional - it only runs if ~/.virtualenvs/gixy-py36 exists
+# This hook is optional - it only runs if ~/.virtualenvs/inforsuitelb_sec-py36 exists
 
-PY36_VENV="$HOME/.virtualenvs/gixy-py36"
+PY36_VENV="$HOME/.virtualenvs/inforsuitelb_sec-py36"
 
 if [ ! -d "$PY36_VENV" ]; then
     echo "⚠️  Python 3.6 venv not found at $PY36_VENV - skipping Py3.6 tests"

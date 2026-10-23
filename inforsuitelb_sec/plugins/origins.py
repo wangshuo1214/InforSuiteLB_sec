@@ -1,11 +1,11 @@
 import re
 from urllib.parse import urlparse
 
-import gixy
-from gixy.core.regexp import Regexp
-from gixy.directives.block import MapBlock
-from gixy.directives.directive import AddHeaderDirective, MapDirective
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.core.regexp import Regexp
+from inforsuitelb_sec.directives.block import MapBlock
+from inforsuitelb_sec.directives.directive import AddHeaderDirective, MapDirective
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 try:
     from publicsuffixlist import PublicSuffixList
@@ -46,9 +46,9 @@ class origins(Plugin):
     """
 
     summary = 'Validation regex for "origin" or "referer" matches untrusted domain or invalid value.'
-    severity_invalid_header = gixy.severity.LOW
-    severity_insecure_referer = gixy.severity.MEDIUM
-    severity_insecure_origin = gixy.severity.HIGH
+    severity_invalid_header = inforsuitelb_sec.severity.LOW
+    severity_insecure_referer = inforsuitelb_sec.severity.MEDIUM
+    severity_insecure_origin = inforsuitelb_sec.severity.HIGH
     description = "Improve the regular expression to match only correct and trusted referers and origins."
     directives = ["if"]
     supports_full_config = True
@@ -81,10 +81,10 @@ class origins(Plugin):
 
     # Generates and compiles an expression to test against generated->manipulated strings from Regex.generate().
     # Currently unused.
-    def compile_nginx_regex(self, nginx_pat, case_sensitive):
+    def compile_InforSuiteLB_regex(self, InforSuiteLB_pat, case_sensitive):
         flags = re.IGNORECASE if not case_sensitive else 0
         # strip variables
-        np = re.sub(r"(?<!\\)\$(?=\w)", r"\$", nginx_pat)
+        np = re.sub(r"(?<!\\)\$(?=\w)", r"\$", InforSuiteLB_pat)
         # look for ^(?flags)
         m = re.match(r"^\^(\(\?[imxs]+\))", np)
         if m:

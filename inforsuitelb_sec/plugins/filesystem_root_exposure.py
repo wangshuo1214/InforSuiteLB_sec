@@ -2,15 +2,15 @@
 
 import posixpath
 
-import gixy
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class filesystem_root_exposure(Plugin):
     """Detect root and alias directives mapped to the filesystem root."""
 
     summary = "Filesystem root used as a document path"
-    severity = gixy.severity.MEDIUM
+    severity = inforsuitelb_sec.severity.MEDIUM
     description = (
         "Mapping request paths to the filesystem root may expose sensitive files "
         "when request routing and access controls permit them to be served."

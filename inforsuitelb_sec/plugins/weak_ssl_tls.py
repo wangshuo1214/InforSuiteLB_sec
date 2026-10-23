@@ -1,5 +1,5 @@
 """
-Plugin to detect weak SSL/TLS configurations in NGINX.
+Plugin to detect weak SSL/TLS configurations in INFORSUITELB.
 
 Checks for:
 - Outdated protocols (SSLv2, SSLv3, TLSv1, TLSv1.1)
@@ -7,8 +7,8 @@ Checks for:
 - Unnecessary ssl_prefer_server_ciphers on
 """
 
-import gixy
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 # Protocols considered insecure
 INSECURE_PROTOCOLS = {"SSLv2", "SSLv3", "TLSv1", "TLSv1.1"}
@@ -79,7 +79,7 @@ class weak_ssl_tls(Plugin):
     """
 
     summary = "Weak SSL/TLS configuration detected"
-    severity = gixy.severity.HIGH
+    severity = inforsuitelb_sec.severity.HIGH
     description = (
         "Using outdated TLS protocols (TLSv1.0, TLSv1.1) or weak cipher suites "
         "exposes your server to attacks such as POODLE, BEAST, and SWEET32. "
@@ -143,7 +143,7 @@ class weak_ssl_tls(Plugin):
                 secure_protocols = {"TLSv1.2", "TLSv1.3"}  # noqa: F841
 
             self.add_issue(
-                severity=gixy.severity.HIGH,
+                severity=inforsuitelb_sec.severity.HIGH,
                 directive=[directive, directive.parent],
                 summary="Insecure TLS protocols enabled",
                 reason=f"Insecure protocols enabled: {', '.join(sorted(insecure_found))}. "
@@ -200,7 +200,7 @@ class weak_ssl_tls(Plugin):
             )
 
             self.add_issue(
-                severity=gixy.severity.HIGH,
+                severity=inforsuitelb_sec.severity.HIGH,
                 directive=[directive, directive.parent],
                 summary="Weak SSL/TLS ciphers enabled",
                 reason=f"Weak ciphers found: {', '.join(weak_found[:5])}{'...' if len(weak_found) > 5 else ''}. "
@@ -244,13 +244,13 @@ class weak_ssl_tls(Plugin):
             if self._has_prioritize_chacha(directive.parent):
                 return
             self.add_issue(
-                severity=gixy.severity.LOW,
+                severity=inforsuitelb_sec.severity.LOW,
                 directive=[directive, directive.parent],
                 summary="Server cipher preference enabled unnecessarily",
                 reason="ssl_prefer_server_ciphers is on, forcing server cipher order. "
                 "With modern cipher lists (all strong AEAD ciphers), client cipher preference "
                 "improves performance — mobile clients without AES-NI benefit from choosing "
-                "ChaCha20-Poly1305 over AES-GCM. Mozilla and nginx maintainers recommend off. "
+                "ChaCha20-Poly1305 over AES-GCM. Mozilla and InforSuiteLB maintainers recommend off. "
                 "If you must keep server preference (policy, compliance), add "
                 "`ssl_conf_command Options PrioritizeChaCha;` so the server order still "
                 "defers to clients that put ChaCha20-Poly1305 first.",
@@ -268,7 +268,7 @@ class weak_ssl_tls(Plugin):
                         description=(
                             "SSL_OP_PRIORITIZE_CHACHA lets AES-NI-less clients still "
                             "get ChaCha20-Poly1305 while the server keeps ordering "
-                            "everything else (nginx 1.19.4+, OpenSSL 1.1.1+)"
+                            "everything else (InforSuiteLB 1.19.4+, OpenSSL 1.1.1+)"
                         ),
                     ),
                 ],
@@ -306,7 +306,7 @@ class weak_ssl_tls(Plugin):
 
             if not http_protocols and not server_protocols:
                 self.add_issue(
-                    severity=gixy.severity.MEDIUM,
+                    severity=inforsuitelb_sec.severity.MEDIUM,
                     directive=[server_block],
                     summary="Missing ssl_protocols directive",
                     reason="No ssl_protocols directive found. Default may include insecure protocols.",
@@ -333,7 +333,7 @@ class weak_ssl_tls(Plugin):
 
             if not http_ciphers and not server_ciphers:
                 self.add_issue(
-                    severity=gixy.severity.MEDIUM,
+                    severity=inforsuitelb_sec.severity.MEDIUM,
                     directive=[server_block],
                     summary="Missing ssl_ciphers directive",
                     reason="No ssl_ciphers directive found. Default cipher suite may include weak ciphers.",

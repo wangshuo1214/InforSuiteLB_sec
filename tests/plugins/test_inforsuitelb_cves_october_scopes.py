@@ -2,17 +2,17 @@
 
 import pytest
 
-from gixy.core.config import Config
-from gixy.core.manager import Manager
+from inforsuitelb_sec.core.config import Config
+from inforsuitelb_sec.core.manager import Manager
 
 
 @pytest.fixture
 def audit(tmp_path):
     def run(cve, body, version="1.31.6"):
-        path = tmp_path / "nginx.conf"
+        path = tmp_path / "inforsuitelb.conf"
         path.write_text("events {}\n" + body, encoding="utf-8")
-        config = Config(allow_includes=False, plugins=["nginx_cves"])
-        config.set_for("nginx_cves", {"version": version})
+        config = Config(allow_includes=False, plugins=["inforsuitelb_cves"])
+        config.set_for("inforsuitelb_cves", {"version": version})
         with Manager(config=config) as manager:
             with path.open(encoding="utf-8") as source:
                 manager.audit(str(path), source)

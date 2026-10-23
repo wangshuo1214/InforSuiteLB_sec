@@ -1,5 +1,5 @@
-import gixy
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class if_is_evil(Plugin):
@@ -11,7 +11,7 @@ class if_is_evil(Plugin):
     """
 
     summary = "If is Evil... when used in location context."
-    severity = gixy.severity.HIGH
+    severity = inforsuitelb_sec.severity.HIGH
     description = (
         'Directive "if" has problems when used in location context, in some cases it does not do what you '
         "expect but something completely different instead. In some cases it even segfaults. It is "
@@ -47,7 +47,7 @@ class if_is_evil(Plugin):
                     '"redirect", or "permanent" argument is used'
                 )
             self.add_issue(
-                severity=gixy.severity.HIGH,
+                severity=inforsuitelb_sec.severity.HIGH,
                 directive=[directive, parent],
                 reason=reason,
             )

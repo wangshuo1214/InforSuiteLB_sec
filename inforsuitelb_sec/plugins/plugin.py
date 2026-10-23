@@ -1,15 +1,15 @@
-import gixy
-from gixy.core.issue import Fix, Issue
+import inforsuitelb_sec
+from inforsuitelb_sec.core.issue import Fix, Issue
 
 # Base URL for plugin documentation
-DOCS_BASE_URL = "https://gixy.getpagespeed.com/checks/"
+DOCS_BASE_URL = "https://docs.inforsuitelb.local/checks/"
 
 
 class Plugin:
     """
-    Base class for all Gixy plugins.
+    Base class for all InforSuiteLBSec plugins.
 
-    Plugins detect security issues in NGINX configurations.
+    Plugins detect security issues in INFORSUITELB configurations.
 
     Class Attributes:
         summary: Short description of the issue this plugin detects.
@@ -26,7 +26,7 @@ class Plugin:
 
     summary = ""
     description = ""
-    severity = gixy.severity.UNSPECIFIED
+    severity = inforsuitelb_sec.severity.UNSPECIFIED
     directives = []
     options = {}
     options_help = {}
@@ -46,7 +46,7 @@ class Plugin:
         """Get the help URL for this plugin.
 
         Returns the custom _help_url if set, otherwise auto-generates from class name.
-        URL format: https://gixy.getpagespeed.com/checks/{plugin-name}/
+        URL format: https://docs.inforsuitelb.local/checks/{plugin-name}/
         where plugin-name is the class name with underscores replaced by dashes.
         """
         if self._help_url:

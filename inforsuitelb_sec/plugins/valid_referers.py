@@ -1,5 +1,5 @@
-import gixy
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class valid_referers(Plugin):
@@ -9,7 +9,7 @@ class valid_referers(Plugin):
     """
 
     summary = 'Used "none" as valid referer.'
-    severity = gixy.severity.HIGH
+    severity = inforsuitelb_sec.severity.HIGH
     description = "Never trust undefined referer."
     directives = ["valid_referers"]
 

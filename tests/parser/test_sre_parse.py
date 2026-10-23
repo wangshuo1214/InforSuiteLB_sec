@@ -1,6 +1,6 @@
 import pytest
 
-import gixy.core.sre_parse.sre_parse as sre_parse
+import inforsuitelb_sec.core.sre_parse.sre_parse as sre_parse
 
 
 def test_pcre_verb_removal():

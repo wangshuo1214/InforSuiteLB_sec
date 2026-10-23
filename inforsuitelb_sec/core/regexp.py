@@ -8,7 +8,7 @@ try:
 except ImportError:
     from functools import cached_property
 
-import gixy.core.sre_parse.sre_parse as sre_parse
+import inforsuitelb_sec.core.sre_parse.sre_parse as sre_parse
 
 LOG = logging.getLogger(__name__)
 
@@ -35,8 +35,8 @@ def _build_reverse_list(original):
 FIX_NAMED_GROUPS_RE = re.compile(r"(?<!\\)\(\?[<'](\w+)[>']")
 
 CATEGORIES = {
-    # Note: ASCII-only character classes. While NGINX configs can contain unicode
-    # strings, NGINX's PCRE regex engine typically uses ASCII semantics for \w, \d, \s
+    # Note: ASCII-only character classes. While INFORSUITELB configs can contain unicode
+    # strings, INFORSUITELB's PCRE regex engine typically uses ASCII semantics for \w, \d, \s
     # unless explicitly compiled with unicode support. This conservative approach is
     # correct for security analysis since URLs are ASCII (unicode gets percent-encoded).
     sre_parse.CATEGORY_SPACE: sre_parse.WHITESPACE,
@@ -105,7 +105,7 @@ def _gen_combinator(variants, _merge=True):
     if need_product:
         producted = product(*res)
         if _merge:
-            # TODO(buglloc): ??!
+            # TODO: ??!
             return list(map(_merge_variants, producted))
         return producted
     elif _merge:
@@ -678,7 +678,7 @@ class InToken(Token):
 
     def _generate_negative(self, context):
         blacklisted = set()
-        # TODO(buglloc): move chars list into the tokens?
+        # TODO: move chars list into the tokens?
         for child in self.childs:
             if isinstance(child, (NegateToken, EmptyToken)):
                 pass
@@ -794,11 +794,11 @@ class AssertToken(Token):
     type = sre_parse.ASSERT
 
     def can_contain(self, char, skip_literal=True):
-        # TODO(buglloc): Do it!
+        # TODO: Do it!
         return False
 
     def must_contain(self, char):
-        # TODO(buglloc): Do it!
+        # TODO: Do it!
         return False
 
     def can_startswith(self, char, strict=False):
@@ -812,11 +812,11 @@ class AssertNotToken(Token):
     type = sre_parse.ASSERT_NOT
 
     def can_contain(self, char, skip_literal=True):
-        # TODO(buglloc): Do it!
+        # TODO: Do it!
         return False
 
     def must_contain(self, char):
-        # TODO(buglloc): Do it!
+        # TODO: Do it!
         return False
 
     def can_startswith(self, char, strict=False):
@@ -833,7 +833,7 @@ class EmptyToken(Token):
         return False
 
     def must_contain(self, char):
-        # TODO(buglloc): Do it!
+        # TODO: Do it!
         return False
 
     def can_startswith(self, char, strict=False):
@@ -881,7 +881,7 @@ def parse(sre_obj, parent=None, regexp=None):
         elif token[0] == sre_parse.GROUPREF:
             result.append(GroupRefToken(token=token, parent=parent, regexp=regexp))
         elif token[0] == sre_parse.ASSERT or token[0] == sre_parse.ASSERT_NOT:
-            pass  # TODO(buglloc): Do it!
+            pass  # TODO: Do it!
         else:
             LOG.info(f'Unexpected token "{token[0]}"')
 
@@ -901,7 +901,7 @@ class Regexp:
         self, source, strict=False, case_sensitive=True, _root=None, _parsed=None
     ):
         """
-        Gixy Regexp class, parse and provide helpers to work with it.
+        InforSuiteLBSec Regexp class, parse and provide helpers to work with it.
 
         :param str source: regexp, e.g. ^foo$.
         :param bool strict: anchored or not.
@@ -1063,7 +1063,7 @@ class Regexp:
 
     @property
     def parsed(self):
-        # TODO(buglloc): Ugly hack!
+        # TODO: Ugly hack!
         if self._parsed:
             return self._parsed
 

@@ -1,8 +1,8 @@
 """Module for unanchored_regex plugin."""
 
-import gixy
-from gixy.directives.block import LocationBlock
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.directives.block import LocationBlock
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class unanchored_regex(Plugin):
@@ -14,7 +14,7 @@ class unanchored_regex(Plugin):
     """
 
     summary = "Regular expressions without anchors can be slow"
-    severity = gixy.severity.LOW
+    severity = inforsuitelb_sec.severity.LOW
     description = "Regular expressions without anchors can be slow"
     directives = ["location"]
 
@@ -24,7 +24,7 @@ class unanchored_regex(Plugin):
             return
         if directive.needs_anchor():
             self.add_issue(
-                severity=gixy.severity.LOW,
+                severity=inforsuitelb_sec.severity.LOW,
                 directive=[directive],
                 reason="Regular expressions without anchors can be slow",
             )

@@ -13,7 +13,7 @@ This is smarter than blindly adding all cache headers to a "secure" list.
 
 import pytest
 
-from gixy.plugins.add_header_redefinition import (
+from inforsuitelb_sec.plugins.add_header_redefinition import (
     CONDITIONAL_SECURITY_HEADERS,
     add_header_redefinition,
     is_security_protective_value,

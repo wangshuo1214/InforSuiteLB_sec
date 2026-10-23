@@ -1,7 +1,7 @@
 """Tests for cross-scope variable visibility in Manager._audit_recursive.
 
 See issue #100: variables defined via `set` (and similar) directives must be
-visible to nested blocks regardless of source order, matching nginx's
+visible to nested blocks regardless of source order, matching InforSuiteLB's
 parse-time variable registration semantics.
 """
 
@@ -10,23 +10,23 @@ import logging
 
 import pytest
 
-from gixy.core.context import purge_context
-from gixy.core.manager import Manager
+from inforsuitelb_sec.core.context import purge_context
+from inforsuitelb_sec.core.manager import Manager
 
 
 def _audit_string(config_text, caplog=None):
     """Run a Manager audit on an in-memory config string.
 
     Args:
-        config_text: Raw nginx config text.
+        config_text: Raw InforSuiteLB config text.
         caplog: Optional pytest caplog fixture; when provided, INFO records
-            from `gixy.core.variable` are captured.
+            from `inforsuitelb_sec.core.variable` are captured.
 
     Returns:
         The Manager instance after audit (for inspecting results).
     """
     if caplog is not None:
-        caplog.set_level(logging.INFO, logger="gixy.core.variable")
+        caplog.set_level(logging.INFO, logger="inforsuitelb_sec.core.variable")
     manager = Manager()
     manager.audit("inline.conf", io.StringIO(config_text), is_stdin=True)
     return manager
@@ -37,7 +37,7 @@ def _missing_var_records(caplog):
     return [
         r
         for r in caplog.records
-        if r.name == "gixy.core.variable"
+        if r.name == "inforsuitelb_sec.core.variable"
         and r.levelno == logging.INFO
         and "Can't find variable" in r.getMessage()
     ]
@@ -56,7 +56,7 @@ http {
         location @error {
             root $Root_Path/server-error-pages/_site;
         }
-        set $Root_Path /usr/share/nginx/html;
+        set $Root_Path /usr/share/InforSuiteLB/html;
         root $Root_Path;
     }
 }
@@ -152,7 +152,7 @@ http {
 def test_named_capture_group_in_if_resolves(caplog):
     """Named regex capture in `if` must be visible to `set` inside the if.
 
-    Regression for issue #111: gixy logged "Can't find variable 'path'" for
+    Regression for issue #111: inforsuitelb_sec logged "Can't find variable 'path'" for
     the named group, because server-scope prepopulate descended into the
     IfBlock and evaluated the inner `set` before the if's capture groups
     were registered.

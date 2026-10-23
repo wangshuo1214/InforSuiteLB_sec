@@ -1,11 +1,11 @@
-from gixy.directives.block import *
-from gixy.parser.nginx_parser import NginxParser
+from inforsuitelb_sec.directives.block import *
+from inforsuitelb_sec.parser.inforsuitelb_parser import InforSuiteLBParser
 
-# TODO(buglloc): what about include block?
+# TODO: what about include block?
 
 
 def _get_parsed(config):
-    root = NginxParser(cwd="", allow_includes=False).parse_string(config)
+    root = InforSuiteLBParser(cwd="", allow_includes=False).parse_string(config)
     return root.children[0]
 
 
@@ -136,7 +136,7 @@ if ($http_some = '/some') {
 
 
 def test_if_regex_backrefs_provide_variables():
-    from gixy.parser.nginx_parser import NginxParser
+    from inforsuitelb_sec.parser.inforsuitelb_parser import InforSuiteLBParser
 
     config = r"""
     if ($request_uri ~ ^/old-path/(.*)) {
@@ -145,7 +145,7 @@ def test_if_regex_backrefs_provide_variables():
     }
     """
 
-    tree = NginxParser(cwd="", allow_includes=False).parse_string(config)
+    tree = InforSuiteLBParser(cwd="", allow_includes=False).parse_string(config)
     # Find the IfBlock and ensure variables (numeric backrefs) are provided
     if_block = None
     for child in tree.children:

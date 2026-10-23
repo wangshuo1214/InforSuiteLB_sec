@@ -1,4 +1,4 @@
-"""Dedicated tests for the ``nginx_cves`` plugin.
+"""Dedicated tests for the ``inforsuitelb_cves`` plugin.
 
 The simply-fixture framework asserts exactly one issue per non-FP
 fixture, which doesn't hold once the CVE database includes dozens of
@@ -10,9 +10,9 @@ range-subtraction logic for patched stable branches.
 import os
 import tempfile
 
-from gixy.core.config import Config
-from gixy.core.manager import Manager as Gixy
-from gixy.plugins._nginx_cves_db import (
+from inforsuitelb_sec.core.config import Config
+from inforsuitelb_sec.core.manager import Manager as InforSuiteLBSec
+from inforsuitelb_sec.plugins._inforsuitelb_cves_db import (
     CVES,
     in_any_range,
     parse_oss,
@@ -106,25 +106,25 @@ def test_database_size_lower_bound():
 
 
 def _run_plugin(version, conf_text):
-    """Audit ``conf_text`` with ``--nginx-version=version`` and return issues.
+    """Audit ``conf_text`` with ``--inforsuitelb-version=version`` and return issues.
 
     Args:
-        version: Version string for ``--nginx-version`` (empty disables).
-        conf_text: Full nginx configuration string.
+        version: Version string for ``--inforsuitelb-version`` (empty disables).
+        conf_text: Full InforSuiteLB configuration string.
 
     Returns:
         List of ``(severity, cve_id)`` tuples extracted from the issues.
     """
-    config = Config(allow_includes=False, plugins=["nginx_cves"])
+    config = Config(allow_includes=False, plugins=["inforsuitelb_cves"])
     if version:
-        config.set_for("nginx_cves", {"version": version})
+        config.set_for("inforsuitelb_cves", {"version": version})
     with tempfile.NamedTemporaryFile(
         "w", suffix=".conf", delete=False, encoding="utf-8"
     ) as handle:
         handle.write(conf_text)
         path = handle.name
     try:
-        with Gixy(config=config) as yoda:
+        with InforSuiteLBSec(config=config) as yoda:
             with open(path, encoding="utf-8") as fp:
                 yoda.audit(path, fp)
             issues = yoda.auditor.plugins[0].issues
@@ -140,8 +140,8 @@ def _cves_fired(version, conf_text):
     """Return the set of CVE IDs that the plugin emits for the given input.
 
     Args:
-        version: nginx version string.
-        conf_text: nginx configuration as a single string.
+        version: InforSuiteLB version string.
+        conf_text: InforSuiteLB configuration as a single string.
 
     Returns:
         Set of CVE ID strings.
@@ -491,7 +491,7 @@ def test_anchor_picks_first_server_for_version_only():
 
 
 # --------------------------------------------------------------------------
-# CVEs landed via the 2026-06-17 nginx 1.30.3 / 1.31.2 releases.
+# CVEs landed via the 2026-06-17 InforSuiteLB 1.30.3 / 1.31.2 releases.
 # --------------------------------------------------------------------------
 
 _HTTP3_ON = """events {}
@@ -621,7 +621,7 @@ http {
 
 
 # --------------------------------------------------------------------------
-# 2026-07-15 security release (nginx 1.30.4 / 1.31.3)
+# 2026-07-15 security release (InforSuiteLB 1.30.4 / 1.31.3)
 # --------------------------------------------------------------------------
 
 
@@ -915,7 +915,7 @@ def test_cve_2026_90439_silent_before_vulnerable_range():
 
 
 # --------------------------------------------------------------------------
-# October 2026 release CVEs (nginx 1.30.6 / 1.31.7)
+# October 2026 release CVEs (InforSuiteLB 1.30.6 / 1.31.7)
 # --------------------------------------------------------------------------
 
 _ALIAS_REWRITE = """events {}

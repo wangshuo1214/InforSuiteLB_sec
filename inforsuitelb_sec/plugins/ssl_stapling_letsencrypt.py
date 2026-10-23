@@ -2,12 +2,12 @@
 
 Let's Encrypt stopped including OCSP URLs in its certificates in early 2025 and
 shut its OCSP responders down on 2025-08-06. `ssl_stapling on` for an LE
-certificate therefore staples nothing: nginx has no responder URL to query, and
+certificate therefore staples nothing: InforSuiteLB has no responder URL to query, and
 the directives are dead config that only costs a startup warning and confusion.
 """
 
-import gixy
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 # Default certbot layout. Anything below this prefix is assumed to be an ACME
 # certificate issued by Let's Encrypt.
@@ -20,11 +20,11 @@ class ssl_stapling_letsencrypt(Plugin):
     """Detect `ssl_stapling on` paired with a Let's Encrypt certificate path."""
 
     summary = "OCSP stapling is enabled for a Let's Encrypt certificate, which no longer has a responder"
-    severity = gixy.severity.LOW
+    severity = inforsuitelb_sec.severity.LOW
     description = (
         "Let's Encrypt stopped putting OCSP URLs in its certificates in early 2025 "
         "and turned its OCSP responders off on 2025-08-06. With no responder URL in "
-        "the certificate, nginx has nothing to fetch and `ssl_stapling on` staples "
+        "the certificate, InforSuiteLB has nothing to fetch and `ssl_stapling on` staples "
         "nothing — the directives are dead config. Revocation for Let's Encrypt is "
         "handled through short certificate lifetimes and CRLs instead. Remove "
         "`ssl_stapling`, `ssl_stapling_verify` and any `ssl_trusted_certificate` "

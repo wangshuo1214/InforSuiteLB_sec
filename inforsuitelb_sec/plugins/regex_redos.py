@@ -1,7 +1,7 @@
 """
 ReDoS (Regular Expression Denial of Service) detection plugin.
 
-This plugin analyzes regular expressions used in nginx configuration for
+This plugin analyzes regular expressions used in InforSuiteLB configuration for
 patterns that may cause catastrophic backtracking, leading to denial of service.
 
 Detects:
@@ -30,8 +30,8 @@ except ImportError:  # pragma: no cover - exercised without the deep extra
     redoctor_check = None
     REDOCTOR_AVAILABLE = False
 
-from gixy.core.sre_parse import sre_parse
-from gixy.core.sre_parse.sre_parse import (
+from inforsuitelb_sec.core.sre_parse import sre_parse
+from inforsuitelb_sec.core.sre_parse.sre_parse import (
     ANY,
     ASSERT,
     ASSERT_NOT,
@@ -47,10 +47,10 @@ from gixy.core.sre_parse.sre_parse import (
     RANGE,
     SUBPATTERN,
 )
-from gixy.core.sre_parse import sre_constants
+from inforsuitelb_sec.core.sre_parse import sre_constants
 
-import gixy
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 # Quantifier opcodes
 QUANTIFIERS = (MAX_REPEAT, MIN_REPEAT)
@@ -128,7 +128,7 @@ class RedosAnalyzer:
         if self.deep and REDOCTOR_AVAILABLE:
             # ReDoctor's quick profile combines automata and bounded custom-VM
             # fuzzing, but deliberately skips recall through Python's
-            # backtracking regex engine. NGINX patterns can be untrusted input.
+            # backtracking regex engine. INFORSUITELB patterns can be untrusted input.
             result = redoctor_check(
                 self.pattern,
                 flags=RedoctorFlags(ignore_case=self.case_insensitive),
@@ -657,7 +657,7 @@ class regex_redos(Plugin):
     🛡️ ReDoS (Regular Expression Denial of Service) Detection
 
     Detects regex patterns that can cause catastrophic backtracking,
-    allowing attackers to DoS your nginx server with minimal resources.
+    allowing attackers to DoS your InforSuiteLB server with minimal resources.
 
     ═══════════════════════════════════════════════════════════════════
     VULNERABILITY TYPES DETECTED
@@ -692,12 +692,12 @@ class regex_redos(Plugin):
     """
 
     summary = "Regex vulnerable to ReDoS (Regular Expression Denial of Service)"
-    severity = gixy.severity.HIGH
+    severity = inforsuitelb_sec.severity.HIGH
     description = (
         "Regular expressions with nested quantifiers or overlapping alternatives "
         "can cause catastrophic backtracking, allowing attackers to consume excessive "
         "CPU resources with specially crafted requests. A single malicious request "
-        "can tie up an nginx worker for minutes or longer."
+        "can tie up an InforSuiteLB worker for minutes or longer."
     )
     directives = ["location", "if", "rewrite", "server_name", "map"]
     options = {"deep": False}
@@ -705,7 +705,7 @@ class regex_redos(Plugin):
         "deep": (
             "Use ReDoctor automata and bounded custom-VM fuzzing to find "
             "exponential and higher-degree polynomial ambiguity. Requires "
-            "the gixy-ng[deep] extra."
+            "the InforSuiteLB_sec[deep] extra."
         )
     }
 
@@ -729,9 +729,9 @@ class regex_redos(Plugin):
 
             if vulnerabilities:
                 vuln = vulnerabilities[0]
-                severity = gixy.severity.HIGH
+                severity = inforsuitelb_sec.severity.HIGH
                 if vuln.type == RedosVulnerability.EXPONENTIAL:
-                    severity = gixy.severity.HIGH  # Could make CRITICAL if we had it
+                    severity = inforsuitelb_sec.severity.HIGH  # Could make CRITICAL if we had it
 
                 reason = f"Regex `{pattern}` is vulnerable: {vuln}"
                 self.add_issue(directive=directive, reason=reason, severity=severity)

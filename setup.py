@@ -1,7 +1,7 @@
 import re
 from setuptools import setup, find_packages
 
-with open("gixy/__init__.py") as fd:
+with open("inforsuitelb_sec/__init__.py") as fd:
     version = re.search(
         r'^version\s*=\s*[\'"]([^\'"]*)[\'"]', fd.read(), re.MULTILINE
     ).group(1)
@@ -10,7 +10,6 @@ if not version:
     raise RuntimeError("Cannot find version information")
 
 install_requires = [
-    "ngxparse>=0.5.16",
     'cached-property>=1.2.0;python_version<"3.8"',
     'argparse>=1.4.0;python_version<"3.2"',
     "Jinja2>=2.8",
@@ -33,36 +32,29 @@ except FileNotFoundError:
     pass
 
 setup(
-    name="gixy-ng",
+    name="InforSuiteLB_sec",
     version=version,
-    description="NGINX configuration [sec]analyzer",
+    description="InforSuiteLB configuration [sec]analyzer",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    keywords="nginx security lint static-analysis",
-    author="Yandex IS Team, GetPageSpeed LLC",
-    author_email="buglloc@yandex.ru, info@getpagespeed.com",
-    url="https://github.com/dvershinin/gixy",
+    keywords="inforsuitelb security lint static-analysis",
+    author="InforSuiteLB",
+    author_email="security@inforsuitelb.local",
+    url="",
     install_requires=install_requires,
     entry_points={
-        "console_scripts": ["gixy=gixy.cli.main:main"],
+        "console_scripts": ["inforsuitelb_sec=inforsuitelb_sec.cli.main:main"],
     },
     packages=find_packages(exclude=["tests", "tests.*"]),
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Environment :: Console",
         "Intended Audience :: System Administrators",
         "Intended Audience :: Developers",
         "Topic :: Security",
         "Topic :: Software Development :: Quality Assurance",
         "Topic :: Software Development :: Testing",
-        "Programming Language :: Python :: 3.6",
-        "Programming Language :: Python :: 3.7",
-        "Programming Language :: Python :: 3.8",
-        "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3.10",
-        "Programming Language :: Python :: 3.11",
-        "Programming Language :: Python :: 3.12",
-        "Programming Language :: Python :: 3.13",
+        "Programming Language :: Python :: 3",
     ],
     include_package_data=True,
     extras_require={

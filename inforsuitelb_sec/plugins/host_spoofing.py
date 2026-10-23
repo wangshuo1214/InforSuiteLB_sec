@@ -1,5 +1,5 @@
-import gixy
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class host_spoofing(Plugin):
@@ -9,7 +9,7 @@ class host_spoofing(Plugin):
     """
 
     summary = "The proxied Host header may be spoofed."
-    severity = gixy.severity.MEDIUM
+    severity = inforsuitelb_sec.severity.MEDIUM
     description = 'In most cases "$host" variable are more appropriate, just use it.'
     directives = ["proxy_set_header"]
 

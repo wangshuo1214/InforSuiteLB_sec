@@ -1,35 +1,33 @@
 """
-Test for GitHub issue #35: TypeError when header value is None.
-
-https://github.com/dvershinin/gixy/issues/35
+Test for issue #35: TypeError when header value is None.
 
 The add_header_multiline plugin crashed with:
     TypeError: argument of type 'NoneType' is not iterable
 when processing headers with None values.
 
-Note: In valid NGINX syntax, add_header requires both name and value.
-However, gixy may encounter None values from:
+Note: In valid INFORSUITELB syntax, add_header requires both name and value.
+However, inforsuitelb_sec may encounter None values from:
 - Malformed/incomplete configuration files
 - Parser edge cases
 - Internal processing bugs
 
-The fix is defensive - gixy should handle gracefully instead of crashing.
+The fix is defensive - inforsuitelb_sec should handle gracefully instead of crashing.
 """
 
 from unittest.mock import MagicMock
 
 import pytest
 
-from gixy.directives.directive import AddHeaderDirective, MoreSetHeadersDirective
-from gixy.plugins.add_header_multiline import add_header_multiline
+from inforsuitelb_sec.directives.directive import AddHeaderDirective, MoreSetHeadersDirective
+from inforsuitelb_sec.plugins.add_header_multiline import add_header_multiline
 
 
 class TestAddHeaderMultilineNoneValue:
     """
     Test that add_header_multiline plugin handles None values gracefully.
 
-    This is defensive programming - even though NGINX syntax requires values,
-    gixy shouldn't crash when encountering malformed configs or parser edge cases.
+    This is defensive programming - even though INFORSUITELB syntax requires values,
+    inforsuitelb_sec shouldn't crash when encountering malformed configs or parser edge cases.
     """
 
     def test_add_header_with_none_value_does_not_crash(self):
@@ -117,7 +115,7 @@ class TestAddHeaderMultilineNoneValueFailsWithoutFix:
     These tests document the root cause of issue #35 and verify the fix.
 
     The 'in' operator on None raises TypeError. This is defensive programming
-    to handle edge cases in malformed configs - even though valid NGINX syntax
+    to handle edge cases in malformed configs - even though valid INFORSUITELB syntax
     always requires a header value.
     """
 

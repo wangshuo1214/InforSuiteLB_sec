@@ -1,5 +1,5 @@
-import gixy
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class resolver_external(Plugin):
@@ -8,10 +8,10 @@ class resolver_external(Plugin):
     """
 
     summary = 'Do not use external nameservers for "resolver"'
-    severity = gixy.severity.HIGH
+    severity = inforsuitelb_sec.severity.HIGH
     description = (
         "Using external nameservers allows someone to send spoofed DNS replies to poison the resolver "
-        "cache, causing NGINX to proxy HTTP requests to an arbitrary upstream server."
+        "cache, causing INFORSUITELB to proxy HTTP requests to an arbitrary upstream server."
     )
     directives = ["resolver"]
 
@@ -19,7 +19,7 @@ class resolver_external(Plugin):
         bad_nameservers = directive.get_external_nameservers()
         if bad_nameservers:
             self.add_issue(
-                severity=gixy.severity.HIGH,
+                severity=inforsuitelb_sec.severity.HIGH,
                 directive=[directive, directive.parent],
                 reason="Found use of external DNS servers {dns_servers}".format(
                     dns_servers=", ".join(bad_nameservers)

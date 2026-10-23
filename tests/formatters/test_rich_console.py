@@ -10,7 +10,7 @@ pytest.importorskip(
 
 def test_rich_console_formatter_available():
     """Test that rich_console formatter is available."""
-    from gixy.formatters import get_all
+    from inforsuitelb_sec.formatters import get_all
 
     formatters = get_all()
     assert "rich_console" in formatters
@@ -18,14 +18,14 @@ def test_rich_console_formatter_available():
 
 def test_rich_console_formatter_produces_output():
     """Test that rich_console formatter produces beautiful output."""
-    from gixy.formatters import get_all
+    from inforsuitelb_sec.formatters import get_all
 
     formatter_cls = get_all()["rich_console"]
     formatter = formatter_cls()
 
     # Create mock reports with an issue
     reports = {
-        "/test/nginx.conf": [
+        "/test/inforsuitelb.conf": [
             {
                 "plugin": "test_plugin",
                 "summary": "Test issue summary",
@@ -42,7 +42,7 @@ def test_rich_console_formatter_produces_output():
     output = formatter.format_reports(reports, stats)
 
     # Check output contains expected elements
-    assert "GIXY" in output
+    assert "INFORSUITELB_SEC" in output
     assert "Security Scanner" in output
     assert "test_plugin" in output
     assert "Test issue summary" in output
@@ -53,12 +53,12 @@ def test_rich_console_formatter_produces_output():
 
 def test_rich_console_formatter_no_issues():
     """Test formatter output when no issues are found."""
-    from gixy.formatters import get_all
+    from inforsuitelb_sec.formatters import get_all
 
     formatter_cls = get_all()["rich_console"]
     formatter = formatter_cls()
 
-    reports = {"/test/nginx.conf": []}
+    reports = {"/test/inforsuitelb.conf": []}
     stats = {"HIGH": 0, "MEDIUM": 0, "LOW": 0, "UNSPECIFIED": 0}
 
     output = formatter.format_reports(reports, stats)
@@ -71,14 +71,14 @@ def test_rich_console_formatter_no_issues():
 
 def test_rich_console_formatter_security_score_calculation():
     """Test that security score is calculated correctly."""
-    from gixy.formatters import get_all
+    from inforsuitelb_sec.formatters import get_all
 
     formatter_cls = get_all()["rich_console"]
     formatter = formatter_cls()
 
     # 3 HIGH issues = 75 points deducted, score = 25
     reports = {
-        "/test/nginx.conf": [
+        "/test/inforsuitelb.conf": [
             {
                 "plugin": "p1",
                 "summary": "s1",
@@ -119,13 +119,13 @@ def test_rich_console_formatter_security_score_calculation():
 
 def test_rich_console_formatter_different_severities():
     """Test formatter handles all severity levels."""
-    from gixy.formatters import get_all
+    from inforsuitelb_sec.formatters import get_all
 
     formatter_cls = get_all()["rich_console"]
     formatter = formatter_cls()
 
     reports = {
-        "/test/nginx.conf": [
+        "/test/inforsuitelb.conf": [
             {
                 "plugin": "p1",
                 "summary": "High issue",
@@ -169,13 +169,13 @@ def test_rich_console_formatter_different_severities():
 
 def test_rich_console_formatter_shows_line_numbers():
     """Test formatter displays file and line number information."""
-    from gixy.formatters import get_all
+    from inforsuitelb_sec.formatters import get_all
 
     formatter_cls = get_all()["rich_console"]
     formatter = formatter_cls()
 
     reports = {
-        "/etc/nginx/nginx.conf": [
+        "/etc/inforsuitelb/inforsuitelb.conf": [
             {
                 "plugin": "test_plugin",
                 "summary": "Test issue",
@@ -184,7 +184,7 @@ def test_rich_console_formatter_shows_line_numbers():
                 "help_url": "",
                 "reason": "Test reason",
                 "config": "server_tokens on;",
-                "location": {"file": "/etc/nginx/nginx.conf", "line": 42},
+                "location": {"file": "/etc/inforsuitelb/inforsuitelb.conf", "line": 42},
             }
         ]
     }
@@ -193,4 +193,4 @@ def test_rich_console_formatter_shows_line_numbers():
     output = formatter.format_reports(reports, stats)
 
     # Should show file:line in VSCode-compatible format
-    assert "/etc/nginx/nginx.conf:42" in output
+    assert "/etc/inforsuitelb/inforsuitelb.conf:42" in output

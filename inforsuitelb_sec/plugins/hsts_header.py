@@ -1,5 +1,5 @@
 """
-Plugin to detect missing or weak HSTS configuration in NGINX.
+Plugin to detect missing or weak HSTS configuration in INFORSUITELB.
 
 Checks for:
 - Missing Strict-Transport-Security header on HTTPS servers
@@ -8,8 +8,8 @@ Checks for:
 
 import re
 
-import gixy
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class hsts_header(Plugin):
@@ -22,7 +22,7 @@ class hsts_header(Plugin):
     """
 
     summary = "Missing or weak HSTS configuration detected"
-    severity = gixy.severity.MEDIUM
+    severity = inforsuitelb_sec.severity.MEDIUM
     description = (
         "HSTS (Strict-Transport-Security) helps protect users against protocol "
         "downgrade attacks and cookie hijacking by forcing browsers to use HTTPS "
@@ -115,7 +115,7 @@ class hsts_header(Plugin):
 
         if not hsts_directive:
             self.add_issue(
-                severity=gixy.severity.MEDIUM,
+                severity=inforsuitelb_sec.severity.MEDIUM,
                 directive=[server_block],
                 summary="Missing HSTS header",
                 reason="No Strict-Transport-Security header found. "
@@ -151,7 +151,7 @@ class hsts_header(Plugin):
         # Less than 6 months is considered weak
         if max_age < 15768000:
             self.add_issue(
-                severity=gixy.severity.LOW,
+                severity=inforsuitelb_sec.severity.LOW,
                 directive=[hsts_directive, server_block],
                 summary="HSTS max-age too short",
                 reason=f"HSTS max-age is {max_age} seconds ({max_age // 86400} days). "

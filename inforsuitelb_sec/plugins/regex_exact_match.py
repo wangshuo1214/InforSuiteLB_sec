@@ -1,8 +1,8 @@
 """Module for regex_exact_match plugin."""
 
-import gixy
-from gixy.directives.block import LocationBlock
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.directives.block import LocationBlock
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class regex_exact_match(Plugin):
@@ -13,7 +13,7 @@ class regex_exact_match(Plugin):
     """
 
     summary = "Regex location can be replaced with exact match"
-    severity = gixy.severity.LOW
+    severity = inforsuitelb_sec.severity.LOW
     description = (
         "A regex location that matches a single literal path can be "
         "replaced with an exact-match location (=) for better performance."
@@ -26,7 +26,7 @@ class regex_exact_match(Plugin):
             return
 
         self.add_issue(
-            severity=gixy.severity.LOW,
+            severity=inforsuitelb_sec.severity.LOW,
             directive=[directive],
             reason=f"Use 'location = {path}' instead of 'location ~ {directive.path}'",
             fixes=[

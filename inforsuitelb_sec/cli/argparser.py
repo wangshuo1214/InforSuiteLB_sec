@@ -1,11 +1,11 @@
-"""This module provides a custom argument parser for Gixy."""
+"""This module provides a custom argument parser for InforSuiteLBSec."""
 
 # flake8: noqa
 
 from configargparse import *
 from io import StringIO
 
-from gixy.core.plugins_manager import PluginsManager
+from inforsuitelb_sec.core.plugins_manager import PluginsManager
 
 # used while parsing args to keep track of where they came from
 _COMMAND_LINE_SOURCE_KEY = "command_line"
@@ -14,7 +14,7 @@ _CONFIG_FILE_SOURCE_KEY = "config_file"
 _DEFAULTS_SOURCE_KEY = "defaults"
 
 
-class GixyConfigParser(DefaultConfigFileParser):
+class InforSuiteLBSecConfigParser(DefaultConfigFileParser):
     def get_syntax_description(self):
         return ""
 
@@ -82,24 +82,23 @@ class GixyConfigParser(DefaultConfigFileParser):
         return r.getvalue()
 
 
-class GixyHelpFormatter(HelpFormatter):
-    """Custom help formatter for Gixy."""
+class InforSuiteLBSecHelpFormatter(HelpFormatter):
+    """Custom help formatter for InforSuiteLBSec."""
 
     def format_help(self):
         manager = PluginsManager()
-        help_message = super(GixyHelpFormatter, self).format_help()
+        help_message = super(InforSuiteLBSecHelpFormatter, self).format_help()
         if "check options:" in help_message:
             # Print available checks _only_ if we print options for them
             checks = "\n".join(
                 "\t" + plugin.__name__ for plugin in manager.plugins_classes
             )
             help_message = f"{help_message}\n\navailable checks:\n{checks}\n"
-        help_message = f"{help_message.rstrip()}\n\nNGINX Extras by GetPageSpeed: packages for RHEL, Debian, and Ubuntu\nhttps://www.getpagespeed.com/nginx-extras\n\n"
-        return help_message
+        return help_message.rstrip() + "\n"
 
 
 class ArgsParser(ArgumentParser):
-    """Custom argument parser for Gixy."""
+    """Custom argument parser for InforSuiteLBSec."""
 
     def get_possible_config_keys(self, action):
         """This method decides which actions can be set in a config file and
@@ -170,14 +169,14 @@ class ArgsParser(ArgumentParser):
 
 
 def create_parser():
-    """Create an argument parser for Gixy."""
+    """Create an argument parser for InforSuiteLBSec."""
     return ArgsParser(
-        description="Gixy - a Nginx configuration [sec]analyzer\n\n",
-        formatter_class=GixyHelpFormatter,
-        config_file_parser_class=GixyConfigParser,
-        auto_env_var_prefix="GIXY_",
+        description="InforSuiteLBSec - a InforSuiteLB configuration [sec]analyzer\n\n",
+        formatter_class=InforSuiteLBSecHelpFormatter,
+        config_file_parser_class=InforSuiteLBSecConfigParser,
+        auto_env_var_prefix="INFORSUITELB_SEC_",
         add_env_var_help=False,
-        default_config_files=["/etc/gixy/gixy.cfg", "~/.config/gixy/gixy.conf"],
+        default_config_files=["/etc/inforsuitelb_sec/inforsuitelb_sec.cfg", "~/.config/inforsuitelb_sec/inforsuitelb_sec.conf"],
         args_for_setting_config_path=["-c", "--config"],
         args_for_writing_out_config_file=["--write-config"],
         add_config_file_help=False,

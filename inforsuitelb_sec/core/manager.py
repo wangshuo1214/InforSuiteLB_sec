@@ -1,12 +1,12 @@
 import logging
 import os
 
-import gixy
-from gixy.core import builtin_variables as builtins
-from gixy.core.config import Config
-from gixy.core.context import get_context, pop_context, purge_context, push_context
-from gixy.core.plugins_manager import PluginsManager
-from gixy.directives.directive import (
+import inforsuitelb_sec
+from inforsuitelb_sec.core import builtin_variables as builtins
+from inforsuitelb_sec.core.config import Config
+from inforsuitelb_sec.core.context import get_context, pop_context, purge_context, push_context
+from inforsuitelb_sec.core.plugins_manager import PluginsManager
+from inforsuitelb_sec.directives.directive import (
     AuthRequestSetDirective,
     MapDirective,
     PerlSetDirective,
@@ -14,7 +14,7 @@ from gixy.directives.directive import (
     SetByLuaDirective,
     SetDirective,
 )
-from gixy.parser.nginx_parser import NginxParser
+from inforsuitelb_sec.parser.inforsuitelb_parser import InforSuiteLBParser
 
 SCOPE_STATIC_SET_DIRECTIVES = (
     SetDirective,
@@ -41,7 +41,7 @@ class Manager:
                 builtins.load_custom_variables_from_dirs(vars_dirs)
         except Exception as e:
             LOG.debug("Custom variables loading failed: %s", e)
-        parser = NginxParser(
+        parser = InforSuiteLBParser(
             cwd=os.path.dirname(file_path) if not is_stdin else "",
             allow_includes=self.config.allow_includes,
         )
@@ -67,18 +67,18 @@ class Manager:
 
     @property
     def stats(self):
-        stats = dict.fromkeys(gixy.severity.ALL, 0)
+        stats = dict.fromkeys(inforsuitelb_sec.severity.ALL, 0)
         for plugin in self.auditor.plugins:
             base_severity = plugin.severity
             for issue in plugin.issues:
-                # TODO(buglloc): encapsulate into Issue class?
+                # TODO: encapsulate into Issue class?
                 severity = issue.severity if issue.severity else base_severity
                 stats[severity] += 1
         return stats
 
     def _audit_recursive(self, tree):
         # Pre-populate scope-wide variables so nested blocks see `set`-like
-        # directives that appear later in source order. Matches nginx's
+        # directives that appear later in source order. Matches InforSuiteLB's
         # parse-time variable registration (see issue #100).
         self._prepopulate_scope_var_names(tree)
         self._prepopulate_scope_var_values(tree)
@@ -147,7 +147,7 @@ class Manager:
                 self._prepopulate_scope_var_values(directive.children)
 
     def _update_variables(self, directive):
-        # TODO(buglloc): finish him!
+        # TODO: finish him!
         if not directive.provide_variables:
             return
 

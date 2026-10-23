@@ -1,6 +1,6 @@
 import pytest
 
-from gixy.core.regexp import Regexp
+from inforsuitelb_sec.core.regexp import Regexp
 
 """
 CATEGORIES:

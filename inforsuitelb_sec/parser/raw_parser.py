@@ -1,22 +1,20 @@
 import logging
 
-import crossplane
-from crossplane.errors import NgxParserBaseException
+from inforsuitelb_sec._vendor import inforsuitelbparse
+from inforsuitelb_sec._vendor.inforsuitelbparse.errors import InforParserBaseException
 
 LOG = logging.getLogger(__name__)
 
 
-def _process_nginx_string(value):
+def _process_inforsuitelb_string(value):
     """
-    Process nginx string escape sequences to match the old parser behavior.
+    Process InforSuiteLB string escape sequences to match the old parser behavior.
     Specifically handles \" -> " conversion.
     """
     if not isinstance(value, str):
         return value
 
-    # Handle escape sequences similar to the old NginxQuotedString parser
-    # The old parser had: self.escCharReplacePattern = '\\\\(\'|")'
-    # This means it would convert \' -> ' and \" -> "
+    # Handle escape sequences similar to the old quoted-string parser
     result = value.replace('\\"', '"').replace("\\'", "'")
     return result
 
@@ -24,7 +22,7 @@ def _process_nginx_string(value):
 def _tokenize_lua_content(content):
     """
     Treat Lua content as opaque for security analysis.
-    Gixy's security plugins don't analyze Lua syntax, so we just preserve the content as-is.
+    InforSuiteLBSec's security plugins don't analyze Lua syntax, so we just preserve the content as-is.
     """
     if not content or not isinstance(content, str):
         return []
@@ -48,18 +46,18 @@ class ParseException(Exception):
 """
 Legacy note:
 This module previously exposed a pyparsing-like ParseResults. We now normalize
-crossplane output directly into a lightweight dict node structure and return
-list[dict] from RawParser.
+the vendored parser output directly into a lightweight dict node structure and
+return list[dict] from RawParser.
 """
 
 
 class RawParser:
     """
-    A class that parses nginx configuration with crossplane
+    A class that parses InforSuiteLB configuration with the vendored parser.
     """
 
     def parse(self, data):
-        """Parse nginx configuration content and return normalized nodes (list[dict])."""
+        """Parse InforSuiteLB configuration content and return normalized nodes (list[dict])."""
         if isinstance(data, bytes):
             content = data.decode("utf-8", errors="replace")
         else:
@@ -75,46 +73,46 @@ class RawParser:
             return []
 
         try:
-            # Parse using crossplane's parse_string for direct string input
-            parsed = crossplane.parse_string(
+            # Parse using the vendored parser's parse_string for direct string input
+            parsed = inforsuitelbparse.parse_string(
                 content,
                 single=True,
                 strict=False,  # Allow directives outside their normal context
                 check_ctx=False,  # Skip context validation
-                check_args=False,  # Don't validate argument counts - gixy is not a config validator
+                check_args=False,  # Don't validate argument counts - inforsuitelb_sec is not a config validator
                 comments=True,  # Include comments in the output
             )
 
-            # Convert crossplane format to normalized nodes
-            return self._normalize_crossplane(parsed)
+            # Convert parser output to normalized nodes
+            return self._normalize_parser_output(parsed)
 
-        except NgxParserBaseException as e:
-            # Convert crossplane error to ParseException format
+        except InforParserBaseException as e:
+            # Convert parser error to ParseException format
             raise ParseException(str(e), loc=0, lineno=getattr(e, "line", 1), col=1)
         except Exception as e:
             raise ParseException(str(e), loc=0, lineno=1, col=1)
 
     def parse_path(self, path):
-        """Parse nginx configuration by file path and return normalized nodes (list[dict])."""
+        """Parse InforSuiteLB configuration by file path and return normalized nodes (list[dict])."""
         try:
-            parsed = crossplane.parse(
+            parsed = inforsuitelbparse.parse(
                 path,
                 single=True,
                 strict=False,  # Allow directives outside their normal context
                 check_ctx=False,  # Skip context validation
-                check_args=False,  # Don't validate argument counts - gixy is not a config validator
+                check_args=False,  # Don't validate argument counts - inforsuitelb_sec is not a config validator
                 comments=True,  # Include comments in the output
             )
 
-            return self._normalize_crossplane(parsed)
-        except NgxParserBaseException as e:
-            # Convert crossplane error to ParseException format
+            return self._normalize_parser_output(parsed)
+        except InforParserBaseException as e:
+            # Convert parser error to ParseException format
             raise ParseException(str(e), loc=0, lineno=getattr(e, "line", 1), col=1)
         except Exception as e:
             raise ParseException(str(e), loc=0, lineno=1, col=1)
 
-    def _normalize_crossplane(self, crossplane_data):
-        """Convert crossplane JSON output to a normalized list[dict] node structure.
+    def _normalize_parser_output(self, parsed_data):
+        """Convert vendored parser JSON output to a normalized list[dict] node structure.
 
         Node shapes:
             {"kind": "directive", "name": str, "args": list[str]}
@@ -125,10 +123,10 @@ class RawParser:
         """
         result = []
 
-        if not crossplane_data or "config" not in crossplane_data:
+        if not parsed_data or "config" not in parsed_data:
             return result
 
-        config_list = crossplane_data["config"]
+        config_list = parsed_data["config"]
         if not config_list:
             return result
 
@@ -147,7 +145,7 @@ class RawParser:
         return result
 
     def _normalize_blocks(self, blocks):
-        """Normalize crossplane 'parsed' list into list[dict] nodes."""
+        """Normalize the vendored parser's 'parsed' list into list[dict] nodes."""
         result = []
 
         # Filter out inline comments (comments that share line numbers with directives)
@@ -170,7 +168,7 @@ class RawParser:
                 continue
 
             directive_name = node.get("directive", "")
-            args = [_process_nginx_string(arg) for arg in node.get("args", [])]
+            args = [_process_inforsuitelb_string(arg) for arg in node.get("args", [])]
 
             if "block" in node:
                 # Block directive

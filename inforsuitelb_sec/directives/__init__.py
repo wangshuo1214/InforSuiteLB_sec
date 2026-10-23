@@ -1,6 +1,6 @@
 import os
 
-from gixy.directives.directive import Directive
+from inforsuitelb_sec.directives.directive import Directive
 
 DIRECTIVES = {}
 
@@ -11,7 +11,7 @@ def import_directives():
         if not directive_file.endswith(".py") or directive_file.startswith("_"):
             continue
         __import__(
-            "gixy.directives." + os.path.splitext(directive_file)[0], None, None, [""]
+            "inforsuitelb_sec.directives." + os.path.splitext(directive_file)[0], None, None, [""]
         )
 
 
@@ -21,8 +21,8 @@ def get_all():
 
     import_directives()
     for klass in Directive.__subclasses__():
-        if not klass.nginx_name:
+        if not klass.InforSuiteLB_name:
             continue
-        DIRECTIVES[klass.nginx_name] = klass
+        DIRECTIVES[klass.InforSuiteLB_name] = klass
 
     return DIRECTIVES

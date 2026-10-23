@@ -1,5 +1,5 @@
-import gixy
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class default_server_flag(Plugin):
@@ -10,7 +10,7 @@ class default_server_flag(Plugin):
     """
 
     summary = "Multiple servers share listen socket without default_server."
-    severity = gixy.severity.LOW
+    severity = inforsuitelb_sec.severity.LOW
     description = (
         "When two or more server blocks listen on the same address:port, one "
         "should be marked with the 'default_server' (or 'default') flag to "
@@ -117,7 +117,7 @@ class default_server_flag(Plugin):
             address = "*"
         # Normalize IPv6 addresses to include brackets
         if ":" in address and not address.startswith("["):
-            # It's likely an IPv6 without brackets (rare in nginx), keep as is
+            # It's likely an IPv6 without brackets (rare in InforSuiteLB), keep as is
             pass
         key = f"{address}:{port}"
         return key, is_default

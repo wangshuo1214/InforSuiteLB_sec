@@ -21,11 +21,11 @@ Why inverse logic is superior:
 
 import re
 
-import gixy
-import gixy.core.builtin_variables as builtins
-from gixy.core.variable import compile_script
-from gixy.directives.directive import is_ipv4, is_ipv6
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+import inforsuitelb_sec.core.builtin_variables as builtins
+from inforsuitelb_sec.core.variable import compile_script
+from inforsuitelb_sec.directives.directive import is_ipv4, is_ipv6
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 # =============================================================================
 # INTERNAL DOMAIN DETECTION (inverse logic - identify internal, flag rest)
@@ -117,7 +117,7 @@ INTERNAL_SINGLE_WORDS = frozenset(
         "cache",
         "queue",
         "worker",
-        "nginx",
+        "InforSuiteLB",
         "apache",
         "proxy",
         "gateway",
@@ -243,7 +243,7 @@ class missing_resolver(Plugin):
     """
     Detects proxy directives with hostnames that won't have DNS re-resolution.
 
-    Nginx resolves DNS for static hostnames ONCE at startup and caches forever.
+    InforSuiteLB resolves DNS for static hostnames ONCE at startup and caches forever.
     This causes issues when backend IPs change (cloud LBs, CDNs, failover).
 
     This plugin is smarter than basic suffix matching:
@@ -255,12 +255,12 @@ class missing_resolver(Plugin):
     """
 
     summary = "Proxy target uses static DNS resolution (resolved only at startup)."
-    severity = gixy.severity.MEDIUM
+    severity = inforsuitelb_sec.severity.MEDIUM
     description = (
         "Using proxy_pass with a static hostname causes DNS to be resolved only at startup, "
         "potentially sending traffic to stale IPs. This is especially critical for cloud "
         "load balancers and CDNs where IPs change frequently. Use a variable with 'resolver' "
-        "directive, or upstream with 'resolve' parameter (nginx 1.27.3+)."
+        "directive, or upstream with 'resolve' parameter (InforSuiteLB 1.27.3+)."
     )
     directives = ["proxy_pass", "fastcgi_pass", "uwsgi_pass", "scgi_pass", "grpc_pass"]
 
@@ -503,7 +503,7 @@ class missing_resolver(Plugin):
             f"set $backend {hostname}; resolver 127.0.0.1 valid=10s; {directive_name} http://$backend;"
         )
         self.add_issue(
-            severity=gixy.severity.HIGH,
+            severity=inforsuitelb_sec.severity.HIGH,
             directive=[directive],
             reason=reason,
         )
@@ -523,7 +523,7 @@ class missing_resolver(Plugin):
                 f"Add 'resolve' parameter and configure 'resolver' directive."
             )
             self.add_issue(
-                severity=gixy.severity.HIGH,
+                severity=inforsuitelb_sec.severity.HIGH,
                 directive=[directive] + [s for s, _, _ in cloud_servers],
                 reason=reason,
             )
@@ -532,11 +532,11 @@ class missing_resolver(Plugin):
             hosts = ", ".join(h for _, h, _ in regular_servers)
             reason = (
                 f"Upstream '{upstream_name}' has server(s) without 'resolve': {hosts}. "
-                f"Add 'resolve' parameter (nginx 1.27.3+) and 'resolver' directive for "
+                f"Add 'resolve' parameter (InforSuiteLB 1.27.3+) and 'resolver' directive for "
                 f"dynamic DNS resolution."
             )
             self.add_issue(
-                severity=gixy.severity.MEDIUM,
+                severity=inforsuitelb_sec.severity.MEDIUM,
                 directive=[directive] + [s for s, _, _ in regular_servers],
                 reason=reason,
             )
@@ -545,12 +545,12 @@ class missing_resolver(Plugin):
         """Report MEDIUM severity for regular public hostnames."""
         reason = (
             f"'{directive_name}' uses static hostname '{hostname}'. DNS resolved once at "
-            f"startup - if IP changes, traffic goes to stale address until nginx restart. "
+            f"startup - if IP changes, traffic goes to stale address until InforSuiteLB restart. "
             f"Consider: resolver 127.0.0.1 valid=30s; set $backend {hostname}; "
             f"{directive_name} http://$backend;"
         )
         self.add_issue(
-            severity=gixy.severity.MEDIUM,
+            severity=inforsuitelb_sec.severity.MEDIUM,
             directive=[directive],
             reason=reason,
         )
@@ -565,7 +565,7 @@ class missing_resolver(Plugin):
             f"Add: resolver 127.0.0.1 valid=30s; (or your internal/VPC DNS server)"
         )
         self.add_issue(
-            severity=gixy.severity.MEDIUM,
+            severity=inforsuitelb_sec.severity.MEDIUM,
             directive=[directive],
             reason=reason,
         )

@@ -1,13 +1,13 @@
-from gixy.core.context import (
+from inforsuitelb_sec.core.context import (
     CONTEXTS,
     get_context,
     pop_context,
     purge_context,
     push_context,
 )
-from gixy.core.regexp import Regexp
-from gixy.core.variable import Variable
-from gixy.directives.block import Root
+from inforsuitelb_sec.core.regexp import Regexp
+from inforsuitelb_sec.core.variable import Variable
+from inforsuitelb_sec.directives.block import Root
 
 
 def setup_function():
@@ -124,7 +124,7 @@ def test_context_depend_variables():
     assert get_context().get_var(1).value == "one"
 
 
-def test_push_failed_with_regexp_py35_gixy_10():
+def test_push_failed_with_regexp_py35_inforsuitelb_sec_10():
     push_context(Root())
     assert len(get_context().variables["index"]) == 0
     assert len(get_context().variables["name"]) == 0

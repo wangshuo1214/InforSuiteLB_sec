@@ -1,7 +1,7 @@
 """Module for try_files_is_evil_too plugin."""
 
-import gixy
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class worker_rlimit_nofile_vs_connections(Plugin):
@@ -14,7 +14,7 @@ class worker_rlimit_nofile_vs_connections(Plugin):
     summary = (
         "The worker_rlimit_nofile should be at least twice than worker_connections."
     )
-    severity = gixy.severity.MEDIUM
+    severity = inforsuitelb_sec.severity.MEDIUM
     description = (
         "The worker_rlimit_nofile should be at least twice than worker_connections."
     )

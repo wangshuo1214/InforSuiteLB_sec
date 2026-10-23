@@ -1,9 +1,9 @@
 import re
 
-import gixy
-from gixy.core.context import get_context
-from gixy.core.variable import compile_script
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.core.context import get_context
+from inforsuitelb_sec.core.variable import compile_script
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class ssrf(Plugin):
@@ -22,7 +22,7 @@ class ssrf(Plugin):
     """
 
     summary = "Possible SSRF (Server Side Request Forgery) vulnerability."
-    severity = gixy.severity.HIGH
+    severity = inforsuitelb_sec.severity.HIGH
     description = "The configuration may allow attacker to create a arbitrary requests from the vulnerable server."
     directives = ["proxy_pass"]
 

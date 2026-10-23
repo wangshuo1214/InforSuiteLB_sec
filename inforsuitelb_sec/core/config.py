@@ -1,4 +1,4 @@
-import gixy
+import inforsuitelb_sec
 
 
 class Config:
@@ -6,7 +6,7 @@ class Config:
         self,
         plugins=None,
         skips=None,
-        severity=gixy.severity.UNSPECIFIED,
+        severity=inforsuitelb_sec.severity.UNSPECIFIED,
         output_format=None,
         output_file=None,
         allow_includes=True,

@@ -3,18 +3,18 @@ import glob
 import logging
 import os
 
-from crossplane import analyzer as nginx_analyzer
+from inforsuitelb_sec._vendor.inforsuitelbparse import analyzer as inforsuitelb_analyzer
 
-from gixy.core.exceptions import InvalidConfiguration
-from gixy.directives import block, directive
-from gixy.parser import raw_parser
-from gixy.parser.raw_parser import ParseException
-from gixy.utils.text import to_native
+from inforsuitelb_sec.core.exceptions import InvalidConfiguration
+from inforsuitelb_sec.directives import block, directive
+from inforsuitelb_sec.parser import raw_parser
+from inforsuitelb_sec.parser.raw_parser import ParseException
+from inforsuitelb_sec.utils.text import to_native
 
 LOG = logging.getLogger(__name__)
 
 
-class NginxParser:
+class InforSuiteLBParser:
     def __init__(self, cwd="", allow_includes=True):
         self.cwd = cwd
         self.configs = {}
@@ -29,10 +29,10 @@ class NginxParser:
         self._active_includes = set()
 
     def parse_file(self, path, root=None, display_path=None):
-        """Parse an nginx configuration file from disk.
+        """Parse an InforSuiteLB configuration file from disk.
 
         Args:
-            path (str): Filesystem path to the nginx config to parse.
+            path (str): Filesystem path to the InforSuiteLB config to parse.
             root (Optional[block.Root]): Existing AST root to append into. If None, a new root is created.
             display_path (Optional[str]): Path to attribute to parsed nodes (used for stdin/tempfile attribution).
 
@@ -60,14 +60,14 @@ class NginxParser:
             self._active_includes.discard(canonical)
 
     def parse_string(self, content, root=None, path_info=None):
-        """Parse nginx configuration provided as a string/bytes.
+        """Parse InforSuiteLB configuration provided as a string/bytes.
 
         The content is written to a temporary file so that the underlying
-        crossplane parser consistently receives a filesystem path (ensuring
+        vendored parser consistently receives a filesystem path (ensuring
         identical behavior to file-based parsing).
 
         Args:
-            content (Union[str, bytes]): Nginx configuration text to parse.
+            content (Union[str, bytes]): InforSuiteLB configuration text to parse.
             root (Optional[block.Root]): Existing AST root to append into. If None, a new root is created.
             path_info (Optional[str]): Path to attribute to parsed nodes (e.g., "<stdin>").
 
@@ -126,7 +126,7 @@ class NginxParser:
     def _build_tree_from_parsed(self, parsed_block, root, current_path):
         """Finalize parsed data into the directive tree.
 
-        Handles nginx -T dumps, manages current file attribution, and
+        Handles InforSuiteLB dump dumps, manages current file attribution, and
         appends parsed directives into the provided root.
 
         Args:
@@ -137,14 +137,14 @@ class NginxParser:
         Returns:
             block.Root: The root containing parsed directives.
         """
-        # Handle nginx -T dump format if detected (multi-file with file delimiters)
+        # Handle InforSuiteLB dump dump format if detected (multi-file with file delimiters)
         dump_root = None
         if (
             len(parsed_block)
             and isinstance(parsed_block[0], dict)
             and parsed_block[0].get("kind") == "file_delimiter"
         ):
-            LOG.info("Switched to parse nginx configuration dump.")
+            LOG.info("Switched to parse InforSuiteLB configuration dump.")
             root_filename = self._prepare_dump(parsed_block)
             self.is_dump = True
             self.cwd = os.path.dirname(root_filename)
@@ -205,7 +205,7 @@ class NginxParser:
                     continue
                 parsed_type = "hash_value"
 
-            if parsed_type in ("directive", "block") and self._nginx_rejects(
+            if parsed_type in ("directive", "block") and self._inforsuitelb_rejects(
                 parsed_type, parsed_name, parsed_args, parsed_line
             ):
                 continue
@@ -219,14 +219,14 @@ class NginxParser:
                 directive_inst.file = self.path_info
                 parent.append(directive_inst)
 
-    def _nginx_rejects(self, parsed_type, parsed_name, parsed_args, parsed_line):
-        """Whether nginx itself would refuse to load this directive.
+    def _inforsuitelb_rejects(self, parsed_type, parsed_name, parsed_args, parsed_line):
+        """Whether InforSuiteLB itself would refuse to load this directive.
 
         We parse with check_args=False to stay tolerant of unknown directives,
-        but a known directive with an argument count nginx rejects (e.g. a bare
+        but a known directive with an argument count InforSuiteLB rejects (e.g. a bare
         "proxy_pass;") can never influence runtime behavior, while typed
-        directive classes and plugins assume nginx-valid arity. Skip it instead
-        of crashing on it (nixpkgs writeNginxConfig feeds us such configs).
+        directive classes and plugins assume InforSuiteLB-valid arity. Skip it instead
+        of crashing on it (declarative config generators feed us such configs).
         """
         if parsed_type == "block":
             args = parsed_args[0]
@@ -236,7 +236,7 @@ class NginxParser:
             term = ";"
         stmt = {"directive": parsed_name, "line": parsed_line, "args": list(args)}
         try:
-            nginx_analyzer.analyze(
+            inforsuitelb_analyzer.analyze(
                 self.path_info,
                 stmt,
                 term,
@@ -245,9 +245,9 @@ class NginxParser:
                 check_ctx=False,
                 check_args=True,
             )
-        except nginx_analyzer.NgxParserDirectiveArgumentsError as e:
+        except inforsuitelb_analyzer.InforParserDirectiveArgumentsError as e:
             LOG.warning(
-                f'Skipping directive nginx would reject in "{self.path_info}": {e}'
+                f'Skipping directive InforSuiteLB would reject in "{self.path_info}": {e}'
             )
             return True
         return False
@@ -271,7 +271,7 @@ class NginxParser:
         except (IndexError, TypeError) as e:
             raise InvalidConfiguration(
                 f'Failed to parse "{parsed_name}" directive: {e}. '
-                f'Config may be malformed - run "nginx -t" to validate.'
+                f'Config may be malformed - run "InforSuiteLB -t" to validate.'
             )
 
     def _get_directive_class(self, parsed_type, parsed_name):
@@ -300,10 +300,10 @@ class NginxParser:
         if not args:
             raise InvalidConfiguration(
                 'Failed to parse "include" directive: list index out of range. '
-                'Config may be malformed - run "nginx -t" to validate.'
+                'Config may be malformed - run "InforSuiteLB -t" to validate.'
             )
         pattern = args[0]
-        #  TODO(buglloc): maybe file providers?
+        #  TODO: maybe file providers?
         if self.is_dump:
             return self._resolve_dump_include(pattern=pattern, parent=parent)
         if not self.allow_includes:
@@ -332,7 +332,7 @@ class NginxParser:
             self.parse_file(file_path, parent)
 
         if not exists:
-            # Align behavior with nginx: unmatched glob patterns are not warnings
+            # Align behavior with InforSuiteLB: unmatched glob patterns are not warnings
             if glob.has_magic(path):
                 LOG.debug(f"Include pattern matched no files: {path}")
             else:
@@ -358,10 +358,10 @@ class NginxParser:
             # Flatten includes by parsing into the current parent context.
             # We only switch the path stack for correct file attribution but keep
             # cwd unchanged (prefix-based) so relative includes inside dumps
-            # resolve as they commonly do in nginx deployments.
+            # resolve as they commonly do in InforSuiteLB deployments.
             # This intentionally diverges from commit 0ef30ce (which switches cwd
             # to the included file directory) to avoid mis-resolving patterns like
-            # sites/default.conf including conf.d/listen → /etc/nginx/conf.d/listen.
+            # sites/default.conf including conf.d/listen → /etc/InforSuiteLB/conf.d/listen.
             old_stack = self._path_stack
             self._path_stack = file_path
             self._active_includes.add(file_path)
@@ -373,7 +373,7 @@ class NginxParser:
                 self._path_stack = old_stack
 
         if not found:
-            # Align behavior with nginx: unmatched glob patterns are not warnings
+            # Align behavior with InforSuiteLB: unmatched glob patterns are not warnings
             if glob.has_magic(path):
                 LOG.debug(f"Include pattern matched no files: {path}")
             else:

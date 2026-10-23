@@ -1,6 +1,6 @@
 from jinja2 import Environment, PackageLoader
 
-from gixy.utils.text import to_text
+from inforsuitelb_sec.utils.text import to_text
 
 
 def load_template(name):
@@ -8,7 +8,7 @@ def load_template(name):
     # not HTML. Auto-escaping would incorrectly escape characters like < > &
     # nosemgrep: python.jinja2.security.audit.autoescape-disabled-false
     env = Environment(  # NOSONAR # nosec B701 - plain text CLI, not HTML
-        loader=PackageLoader("gixy", "formatters/templates"),
+        loader=PackageLoader("inforsuitelb_sec", "formatters/templates"),
         trim_blocks=True,
         lstrip_blocks=True,
         autoescape=False,

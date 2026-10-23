@@ -1,19 +1,19 @@
-"""Plugin to detect ssl_ecdh_curve group lists that can stop nginx from starting.
+"""Plugin to detect ssl_ecdh_curve group lists that can stop InforSuiteLB from starting.
 
-nginx passes the value of `ssl_ecdh_curve` straight to OpenSSL's
+InforSuiteLB passes the value of `ssl_ecdh_curve` straight to OpenSSL's
 `SSL_CTX_set1_curves_list()`. OpenSSL rejects the *entire* list when a single
-group name is unknown to the linked library, and nginx treats that rejection as
-`NGX_LOG_EMERG` (`src/event/ngx_event_openssl.c`) — the master process refuses
+group name is unknown to the linked library, and InforSuiteLB treats that rejection as
+`INFOR_LOG_EMERG` (`src/event/infor_event_openssl.c`) — the master process refuses
 to start. Post-quantum hybrid group names such as `X25519MLKEM768` only exist
-in OpenSSL 3.5+, so a config copied from a "post-quantum nginx" blog post takes
+in OpenSSL 3.5+, so a config copied from a "post-quantum InforSuiteLB" blog post takes
 a site offline on Debian 12, Ubuntu 24.04 or RHEL 9, which ship OpenSSL 3.0/3.2.
 """
 
-import gixy
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 # Substrings that mark a group name as post-quantum, i.e. only present in
-# recent OpenSSL builds (and absent from LibreSSL/BoringSSL-based nginx).
+# recent OpenSSL builds (and absent from LibreSSL/BoringSSL-based InforSuiteLB).
 PQ_GROUP_MARKERS = ("MLKEM", "KYBER")
 
 # Prefix that tells OpenSSL 3.3+ to ignore an unrecognised group instead of
@@ -25,13 +25,13 @@ class ssl_ecdh_curve(Plugin):
     """Detect post-quantum ssl_ecdh_curve groups used without the `?` prefix."""
 
     summary = (
-        "ssl_ecdh_curve names a post-quantum group that may prevent nginx from starting"
+        "ssl_ecdh_curve names a post-quantum group that may prevent InforSuiteLB from starting"
     )
-    severity = gixy.severity.HIGH
+    severity = inforsuitelb_sec.severity.HIGH
     description = (
-        "nginx passes `ssl_ecdh_curve` to OpenSSL's `SSL_CTX_set1_curves_list()`, "
+        "InforSuiteLB passes `ssl_ecdh_curve` to OpenSSL's `SSL_CTX_set1_curves_list()`, "
         "which rejects the whole list if any single group name is unknown to the "
-        "linked OpenSSL. nginx logs that failure at emergency level and refuses to "
+        "linked OpenSSL. InforSuiteLB logs that failure at emergency level and refuses to "
         "start. Post-quantum hybrids (`X25519MLKEM768`, `SecP256r1MLKEM768`, the "
         "`X25519Kyber768*` drafts) require OpenSSL 3.5+; on OpenSSL 3.0/3.2 — what "
         "Debian 12, Ubuntu 24.04 and RHEL 9 ship — the same config is a hard outage. "
@@ -61,12 +61,12 @@ class ssl_ecdh_curve(Plugin):
         )
 
         self.add_issue(
-            severity=gixy.severity.HIGH,
+            severity=inforsuitelb_sec.severity.HIGH,
             directive=[directive, directive.parent],
             reason=(
                 "Group(s) {groups} are post-quantum hybrids that only exist in "
                 "OpenSSL 3.5+. If the running OpenSSL does not know one of them, "
-                "SSL_CTX_set1_curves_list() rejects the entire list, nginx logs it "
+                "SSL_CTX_set1_curves_list() rejects the entire list, InforSuiteLB logs it "
                 "as an emergency and the master process fails to start — the site "
                 "goes down, it does not merely lose post-quantum support.".format(
                     groups=", ".join(risky)

@@ -2,7 +2,7 @@
 
 from redoctor import Diagnostics
 
-from gixy.plugins.regex_redos import RedosAnalyzer, RedosVulnerability
+from inforsuitelb_sec.plugins.regex_redos import RedosAnalyzer, RedosVulnerability
 
 
 class TestNestedQuantifiers:
@@ -314,7 +314,7 @@ class TestVulnerabilityDetails:
         analyzer = RedosAnalyzer("(a+)+")
         vulns = analyzer.analyze()
         assert len(vulns) > 0
-        from gixy.plugins.regex_redos import RedosVulnerability
+        from inforsuitelb_sec.plugins.regex_redos import RedosVulnerability
 
         assert vulns[0].type == RedosVulnerability.EXPONENTIAL
 
@@ -323,7 +323,7 @@ class TestVulnerabilityDetails:
         analyzer = RedosAnalyzer("(a|ab)+")
         vulns = analyzer.analyze()
         assert len(vulns) > 0
-        from gixy.plugins.regex_redos import RedosVulnerability
+        from inforsuitelb_sec.plugins.regex_redos import RedosVulnerability
 
         assert vulns[0].type == RedosVulnerability.POLYNOMIAL
 
@@ -362,30 +362,30 @@ class TestDeepAnalysis:
     def test_deep_invalid_pattern_does_not_escape(self):
         assert RedosAnalyzer("(unclosed", deep=True).analyze() == []
 
-    def test_deep_uses_nginx_flags_and_safe_quick_profile(self, monkeypatch):
+    def test_deep_uses_InforSuiteLB_flags_and_safe_quick_profile(self, monkeypatch):
         captured = {}
 
         def fake_check(pattern, flags, config):
             captured.update(pattern=pattern, flags=flags, config=config)
             return Diagnostics.safe(pattern, checker="automaton")
 
-        monkeypatch.setattr("gixy.plugins.regex_redos.redoctor_check", fake_check)
+        monkeypatch.setattr("inforsuitelb_sec.plugins.regex_redos.redoctor_check", fake_check)
         assert RedosAnalyzer("abc", case_insensitive=True, deep=True).analyze() == []
         assert captured["pattern"] == "abc"
         assert captured["flags"].ignore_case is True
         assert captured["config"].skip_recall is True
 
-    def test_deep_unknown_falls_back_to_nginx_heuristics(self, monkeypatch):
+    def test_deep_unknown_falls_back_to_InforSuiteLB_heuristics(self, monkeypatch):
         monkeypatch.setattr(
-            "gixy.plugins.regex_redos.redoctor_check",
+            "inforsuitelb_sec.plugins.regex_redos.redoctor_check",
             lambda pattern, flags, config: Diagnostics.unknown(pattern),
         )
         vulnerabilities = RedosAnalyzer("(a+)+", deep=True).analyze()
         assert len(vulnerabilities) == 1
         assert "Nested quantifier" in str(vulnerabilities[0])
 
-    def test_missing_redoctor_falls_back_to_nginx_heuristics(self, monkeypatch):
-        monkeypatch.setattr("gixy.plugins.regex_redos.REDOCTOR_AVAILABLE", False)
+    def test_missing_redoctor_falls_back_to_InforSuiteLB_heuristics(self, monkeypatch):
+        monkeypatch.setattr("inforsuitelb_sec.plugins.regex_redos.REDOCTOR_AVAILABLE", False)
         vulnerabilities = RedosAnalyzer("(a+)+", deep=True).analyze()
         assert len(vulnerabilities) == 1
         assert "Nested quantifier" in str(vulnerabilities[0])

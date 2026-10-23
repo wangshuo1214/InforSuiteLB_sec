@@ -14,7 +14,7 @@ from __future__ import print_function
 
 """Internal support module for sre"""
 
-from gixy.core.sre_parse.sre_constants import *
+from inforsuitelb_sec.core.sre_parse.sre_constants import *
 
 SPECIAL_CHARS = ".\\[{()*+?^$|"
 REPEAT_CHARS = "*+?{"

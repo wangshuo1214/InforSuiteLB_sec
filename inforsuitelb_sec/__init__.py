@@ -1,5 +1,5 @@
 # flake8: noqa
 
-from gixy.core import severity
+from inforsuitelb_sec.core import severity
 
-version = "0.2.57"
+version = "2.0.3.3"

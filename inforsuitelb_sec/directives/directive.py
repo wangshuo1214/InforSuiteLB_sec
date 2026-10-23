@@ -2,28 +2,28 @@
 
 import ipaddress
 
-from gixy.core.regexp import Regexp
-from gixy.core.variable import Variable
+from inforsuitelb_sec.core.regexp import Regexp
+from inforsuitelb_sec.core.variable import Variable
 
 
 def get_overrides():
     """Get a list of all directives that override the default behavior"""
     result = {}
     for klass in Directive.__subclasses__():
-        if not klass.nginx_name:
+        if not klass.InforSuiteLB_name:
             continue
 
         if not klass.__name__.endswith("Directive"):
             continue
 
-        result[klass.nginx_name] = klass
+        result[klass.InforSuiteLB_name] = klass
     return result
 
 
 class Directive:
     """Base class for all directives"""
 
-    nginx_name = None
+    InforSuiteLB_name = None
     is_block = False
     provide_variables = False
 
@@ -87,7 +87,7 @@ class Directive:
 class AddHeaderDirective(Directive):
     """The add_header directive is used to add a header to the response"""
 
-    nginx_name = "add_header"
+    InforSuiteLB_name = "add_header"
 
     def __init__(self, name, args):
         super(AddHeaderDirective, self).__init__(name, args)
@@ -104,10 +104,10 @@ class MoreSetHeadersDirective(Directive):
     Syntax:	more_set_headers 'Foo: bar' 'Baz: bah';
     """
 
-    nginx_name = "more_set_headers"
+    InforSuiteLB_name = "more_set_headers"
 
     def get_headers(self):
-        # See headers more documentation: https://nginx-extras.getpagespeed.com/modules/headers-more/#description
+
         result = {}
         skip_next = False
         for arg in self.args:
@@ -141,7 +141,7 @@ class MoreSetHeadersDirective(Directive):
 
 
 class SetDirective(Directive):
-    nginx_name = "set"
+    InforSuiteLB_name = "set"
     provide_variables = True
 
     def __init__(self, name, args):
@@ -155,7 +155,7 @@ class SetDirective(Directive):
 
 
 class AuthRequestSetDirective(Directive):
-    nginx_name = "auth_request_set"
+    InforSuiteLB_name = "auth_request_set"
     provide_variables = True
 
     def __init__(self, name, args):
@@ -171,7 +171,7 @@ class AuthRequestSetDirective(Directive):
 class PerlSetDirective(Directive):
     """The perl_set directive is used to set a value of a variable to a value"""
 
-    nginx_name = "perl_set"
+    InforSuiteLB_name = "perl_set"
     provide_variables = True
 
     def __init__(self, name, args):
@@ -185,7 +185,7 @@ class PerlSetDirective(Directive):
 
 
 class SetByLuaDirective(Directive):
-    nginx_name = "set_by_lua"
+    InforSuiteLB_name = "set_by_lua"
     provide_variables = True
 
     def __init__(self, name, args):
@@ -199,7 +199,7 @@ class SetByLuaDirective(Directive):
 
 
 class RewriteDirective(Directive):
-    nginx_name = "rewrite"
+    InforSuiteLB_name = "rewrite"
     provide_variables = True
     boundary = Regexp(r"[^\s\r\n]")
 
@@ -225,7 +225,7 @@ class RewriteDirective(Directive):
 class RootDirective(Directive):
     """The root directive is used to define a directory that will hold the files."""
 
-    nginx_name = "root"
+    InforSuiteLB_name = "root"
     provide_variables = True
 
     def __init__(self, name, args):
@@ -238,7 +238,7 @@ class RootDirective(Directive):
 
 
 class AliasDirective(Directive):
-    nginx_name = "alias"
+    InforSuiteLB_name = "alias"
 
     def __init__(self, name, args):
         super().__init__(name, args)
@@ -297,7 +297,7 @@ class ResolverDirective(Directive):
     Syntax:	resolver address ... [valid=time] [ipv4=on|off] [ipv6=on|off] [status_zone=zone];
     """
 
-    nginx_name = "resolver"
+    InforSuiteLB_name = "resolver"
 
     def __init__(self, name, args):
         super().__init__(name, args)
@@ -349,7 +349,7 @@ class MapDirective(Directive):
     }
     """
 
-    nginx_name = "map"  # XXX: Also used for "geo". Could also work for "charset_map"
+    InforSuiteLB_name = "map"  # XXX: Also used for "geo". Could also work for "charset_map"
     provide_variables = True
 
     def __init__(self, source, destination):
@@ -387,7 +387,7 @@ class MapDirective(Directive):
 
         ancestor = self.parent
         while (
-            ancestor is not None and ancestor.nginx_name != "map"
+            ancestor is not None and ancestor.InforSuiteLB_name != "map"
         ):  # XXX: Better to check isinstance(ancestor, MapBlock) but circular import..
             ancestor = getattr(ancestor, "parent", None)
 

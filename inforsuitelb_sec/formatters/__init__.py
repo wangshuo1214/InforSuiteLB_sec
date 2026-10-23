@@ -1,6 +1,6 @@
 import os
 
-from gixy.formatters.base import BaseFormatter
+from inforsuitelb_sec.formatters.base import BaseFormatter
 
 FORMATTERS = {}
 
@@ -11,7 +11,7 @@ def import_formatters():
         if not formatter_file.endswith(".py") or formatter_file.startswith("_"):
             continue
         __import__(
-            "gixy.formatters." + os.path.splitext(formatter_file)[0], None, None, [""]
+            "inforsuitelb_sec.formatters." + os.path.splitext(formatter_file)[0], None, None, [""]
         )
 
 

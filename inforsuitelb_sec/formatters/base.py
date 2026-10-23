@@ -1,6 +1,6 @@
-import gixy
-from gixy.directives import block
-from gixy.directives.block import GeoBlock, MapBlock
+import inforsuitelb_sec
+from inforsuitelb_sec.directives import block
+from inforsuitelb_sec.directives.block import GeoBlock, MapBlock
 
 
 class BaseFormatter:
@@ -8,13 +8,13 @@ class BaseFormatter:
 
     def __init__(self):
         self.reports = {}
-        self.stats = dict.fromkeys(gixy.severity.ALL, 0)
+        self.stats = dict.fromkeys(inforsuitelb_sec.severity.ALL, 0)
 
     def format_reports(self, reports, stats):
         raise NotImplementedError("Formatter must override format_reports function")
 
     def feed(self, path, manager):
-        for severity in gixy.severity.ALL:
+        for severity in inforsuitelb_sec.severity.ALL:
             self.stats[severity] += manager.stats[severity]
 
         self.reports[path] = []
@@ -108,7 +108,7 @@ class BaseFormatter:
                 continue
             printable = type(leap) not in self.skip_parents
             # Special hack for includes
-            # TODO(buglloc): fix me
+            # TODO: fix me
             have_parentheses = leap.__class__ is not block.IncludeBlock
 
             if printable:

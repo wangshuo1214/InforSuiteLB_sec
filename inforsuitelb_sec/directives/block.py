@@ -3,27 +3,27 @@ try:
 except ImportError:
     from functools import cached_property
 
-from gixy.core.exceptions import InvalidConfiguration
-from gixy.core.regexp import Regexp
-from gixy.core.variable import Variable, compile_script
-from gixy.directives.directive import Directive, MapDirective
+from inforsuitelb_sec.core.exceptions import InvalidConfiguration
+from inforsuitelb_sec.core.regexp import Regexp
+from inforsuitelb_sec.core.variable import Variable, compile_script
+from inforsuitelb_sec.directives.directive import Directive, MapDirective
 
 
 def get_overrides():
     result = {}
     for klass in Block.__subclasses__():
-        if not klass.nginx_name:
+        if not klass.InforSuiteLB_name:
             continue
 
         if not klass.__name__.endswith("Block"):
             continue
 
-        result[klass.nginx_name] = klass
+        result[klass.InforSuiteLB_name] = klass
     return result
 
 
 class Block(Directive):
-    nginx_name = None
+    InforSuiteLB_name = None
     is_block = True
     self_context = True
 
@@ -86,21 +86,21 @@ class Block(Directive):
 
 
 class Root(Block):
-    nginx_name = None
+    InforSuiteLB_name = None
 
     def __init__(self):
         super(Root, self).__init__(None, [])
 
 
 class HttpBlock(Block):
-    nginx_name = "http"
+    InforSuiteLB_name = "http"
 
     def __init__(self, name, args):
         super(HttpBlock, self).__init__(name, args)
 
 
 class ServerBlock(Block):
-    nginx_name = "server"
+    InforSuiteLB_name = "server"
 
     def __init__(self, name, args):
         super(ServerBlock, self).__init__(name, args)
@@ -116,7 +116,7 @@ class ServerBlock(Block):
 
 
 class LocationBlock(Block):
-    nginx_name = "location"
+    InforSuiteLB_name = "location"
     provide_variables = True
 
     def __init__(self, name, args):
@@ -178,7 +178,7 @@ class LocationBlock(Block):
 
 
 class IfBlock(Block):
-    nginx_name = "if"
+    InforSuiteLB_name = "if"
     self_context = False
 
     def __init__(self, name, args):
@@ -253,7 +253,7 @@ class IfBlock(Block):
 
 
 class IncludeBlock(Block):
-    nginx_name = "include"
+    InforSuiteLB_name = "include"
     self_context = False
 
     def __init__(self, name, args):
@@ -273,7 +273,7 @@ class MapBlock(Block):
     } <- this part is the block
     """
 
-    nginx_name = "map"
+    InforSuiteLB_name = "map"
     self_context = False
     provide_variables = True
 
@@ -349,7 +349,7 @@ class MapBlock(Block):
         mapblock_vars = []
         for i in self.variables[0].value:
             mapblock_vars.append(str(i.value))
-        return f"{self.nginx_name} {self.source} ${self.variable} {{"
+        return f"{self.InforSuiteLB_name} {self.source} ${self.variable} {{"
 
 
 class GeoBlock(Block):
@@ -364,7 +364,7 @@ class GeoBlock(Block):
     } <- this part
     """
 
-    nginx_name = "geo"
+    InforSuiteLB_name = "geo"
     self_context = False
     provide_variables = True
 
@@ -417,4 +417,4 @@ class GeoBlock(Block):
         mapblock_vars = []
         for i in self.variables[0].value:
             mapblock_vars.append(str(i.value))
-        return f"{self.nginx_name} {self.source} ${self.variable} {{"
+        return f"{self.InforSuiteLB_name} {self.source} ${self.variable} {{"

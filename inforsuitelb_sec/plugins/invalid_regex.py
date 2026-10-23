@@ -1,8 +1,8 @@
 import re
 
-import gixy
-from gixy.core.regexp import Regexp
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.core.regexp import Regexp
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class invalid_regex(Plugin):
@@ -17,7 +17,7 @@ class invalid_regex(Plugin):
     """
 
     summary = "Using a nonexistent regex capture group."
-    severity = gixy.severity.MEDIUM
+    severity = inforsuitelb_sec.severity.MEDIUM
     description = (
         "Referencing a capture group (like $1, $2) that does not exist in "
         "the regex pattern will result in an empty value."

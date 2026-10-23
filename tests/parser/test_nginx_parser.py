@@ -2,25 +2,25 @@ import logging
 
 import pytest
 
-from gixy.directives.block import *
-from gixy.directives.directive import *
-from gixy.parser.nginx_parser import NginxParser
+from inforsuitelb_sec.directives.block import *
+from inforsuitelb_sec.directives.directive import *
+from inforsuitelb_sec.parser.inforsuitelb_parser import InforSuiteLBParser
 
 
 def _parse(config):
-    return NginxParser(cwd="", allow_includes=False).parse_string(config)
+    return InforSuiteLBParser(cwd="", allow_includes=False).parse_string(config)
 
 
 def _parse_via_compat_parse(config):
-    """Use the deprecated NginxParser.parse() alias for backward-compat tests."""
-    return NginxParser(cwd="", allow_includes=False).parse(config)
+    """Use the deprecated InforSuiteLBParser.parse() alias for backward-compat tests."""
+    return InforSuiteLBParser(cwd="", allow_includes=False).parse(config)
 
 
 @pytest.mark.parametrize(
     "config,expected",
     zip(
         [
-            "access_log syslog:server=127.0.0.1,tag=nginx_sentry toolsformat;",
+            "access_log syslog:server=127.0.0.1,tag=InforSuiteLB_sentry toolsformat;",
             "user http;",
             "internal;",
             'set $foo "bar";',
@@ -60,15 +60,15 @@ def test_blocks(config, expected):
 
 def test_dump_simple():
     config = """
-# configuration file /etc/nginx/nginx.conf:
+# configuration file /etc/inforsuitelb/inforsuitelb.conf:
 http {
     include sites/*.conf;
 }
 
-# configuration file /etc/nginx/conf.d/listen:
+# configuration file /etc/inforsuitelb/conf.d/listen:
 listen 80;
 
-# configuration file /etc/nginx/sites/default.conf:
+# configuration file /etc/inforsuitelb/sites/default.conf:
 server {
     include conf.d/listen;
 }
@@ -108,17 +108,17 @@ def test_encoding():
 
 def test_dump_nested_include_resolves_relative_to_root():
     config = """
-# configuration file /etc/nginx/nginx.conf:
+# configuration file /etc/inforsuitelb/inforsuitelb.conf:
 http {
     include sites/a.conf;
 }
 
-# configuration file /etc/nginx/sites/a.conf:
+# configuration file /etc/inforsuitelb/sites/a.conf:
 server {
     include snippets/shared;
 }
 
-# configuration file /etc/nginx/snippets/shared:
+# configuration file /etc/inforsuitelb/snippets/shared:
 add_header X-Test 1;
     """
 
@@ -150,21 +150,21 @@ add_header X-Test 1;
 
 def test_dump_sibling_includes_resolve_from_prefix():
     config = """
-# configuration file /etc/nginx/nginx.conf:
+# configuration file /etc/inforsuitelb/inforsuitelb.conf:
 http {
     include sites/default.conf;
 }
 
-# configuration file /etc/nginx/sites/default.conf:
+# configuration file /etc/inforsuitelb/sites/default.conf:
 server {
     include conf.d/listen;
     include conf.d/add_header;
 }
 
-# configuration file /etc/nginx/conf.d/listen:
+# configuration file /etc/inforsuitelb/conf.d/listen:
 listen 80;
 
-# configuration file /etc/nginx/conf.d/add_header:
+# configuration file /etc/inforsuitelb/conf.d/add_header:
 add_header X-Foo bar;
     """
 
@@ -198,15 +198,15 @@ def test_parse_alias_matches_parse_string_for_simple_configs(config):
 
 def test_parse_alias_handles_dump_same_as_parse_string():
     config = """
-# configuration file /etc/nginx/nginx.conf:
+# configuration file /etc/inforsuitelb/inforsuitelb.conf:
 http {
     include sites/*.conf;
 }
 
-# configuration file /etc/nginx/conf.d/listen:
+# configuration file /etc/inforsuitelb/conf.d/listen:
 listen 80;
 
-# configuration file /etc/nginx/sites/default.conf:
+# configuration file /etc/inforsuitelb/sites/default.conf:
 server {
     include conf.d/listen;
 }
@@ -235,7 +235,7 @@ def assert_config(config, expected):
 
 
 # --- Regression tests for issue #113: circular include must not recurse ---
-# Without the guard in NginxParser, these configs silently produced the same
+# Without the guard in InforSuiteLBParser, these configs silently produced the same
 # directive 100+ times (and on Linux/Python 3.11 with a deeper-per-cycle
 # config, crashed with RecursionError). The guard turns each cycle into one
 # WARNING + a finite tree.
@@ -255,12 +255,12 @@ def _assert_circular_warning(caplog):
 
 def test_self_include_does_not_recurse(tmp_path, caplog):
     """A file that literally includes itself must not recurse."""
-    nginx_conf = tmp_path / "nginx.conf"
-    nginx_conf.write_text("user http;\ninclude nginx.conf;\n")
+    InforSuiteLB_conf = tmp_path / "inforsuitelb.conf"
+    InforSuiteLB_conf.write_text("user http;\ninclude inforsuitelb.conf;\n")
 
-    parser = NginxParser(cwd=str(tmp_path), allow_includes=True)
-    with caplog.at_level(logging.WARNING, logger="gixy.parser.nginx_parser"):
-        tree = parser.parse_file(str(nginx_conf))
+    parser = InforSuiteLBParser(cwd=str(tmp_path), allow_includes=True)
+    with caplog.at_level(logging.WARNING, logger="inforsuitelb_sec.parser.inforsuitelb_parser"):
+        tree = parser.parse_file(str(InforSuiteLB_conf))
 
     names = [c.name for c in tree.children]
     assert (
@@ -277,12 +277,12 @@ def test_glob_self_match_does_not_recurse(tmp_path, caplog):
     """
     conf_d = tmp_path / "conf.d"
     conf_d.mkdir()
-    (tmp_path / "nginx.conf").write_text("user http;\ninclude conf.d/*.conf;\n")
+    (tmp_path / "inforsuitelb.conf").write_text("user http;\ninclude conf.d/*.conf;\n")
     (conf_d / "site.conf").write_text(f"server_tokens off;\ninclude {conf_d}/*.conf;\n")
 
-    parser = NginxParser(cwd=str(tmp_path), allow_includes=True)
-    with caplog.at_level(logging.WARNING, logger="gixy.parser.nginx_parser"):
-        tree = parser.parse_file(str(tmp_path / "nginx.conf"))
+    parser = InforSuiteLBParser(cwd=str(tmp_path), allow_includes=True)
+    with caplog.at_level(logging.WARNING, logger="inforsuitelb_sec.parser.inforsuitelb_parser"):
+        tree = parser.parse_file(str(tmp_path / "inforsuitelb.conf"))
 
     names = [c.name for c in tree.children]
     assert (
@@ -297,8 +297,8 @@ def test_mutual_include_does_not_recurse(tmp_path, caplog):
     (tmp_path / "a.conf").write_text("user http;\ninclude b.conf;\n")
     (tmp_path / "b.conf").write_text("worker_processes auto;\ninclude a.conf;\n")
 
-    parser = NginxParser(cwd=str(tmp_path), allow_includes=True)
-    with caplog.at_level(logging.WARNING, logger="gixy.parser.nginx_parser"):
+    parser = InforSuiteLBParser(cwd=str(tmp_path), allow_includes=True)
+    with caplog.at_level(logging.WARNING, logger="inforsuitelb_sec.parser.inforsuitelb_parser"):
         tree = parser.parse_file(str(tmp_path / "a.conf"))
 
     names = [c.name for c in tree.children]
@@ -311,10 +311,10 @@ def test_transitive_include_cycle_does_not_recurse(tmp_path, caplog):
     """A → B → C → A cycle must terminate; catches "only-immediate-include" guards."""
     (tmp_path / "a.conf").write_text("user http;\ninclude b.conf;\n")
     (tmp_path / "b.conf").write_text("worker_processes auto;\ninclude c.conf;\n")
-    (tmp_path / "c.conf").write_text("pid /run/nginx.pid;\ninclude a.conf;\n")
+    (tmp_path / "c.conf").write_text("pid /run/InforSuiteLB.pid;\ninclude a.conf;\n")
 
-    parser = NginxParser(cwd=str(tmp_path), allow_includes=True)
-    with caplog.at_level(logging.WARNING, logger="gixy.parser.nginx_parser"):
+    parser = InforSuiteLBParser(cwd=str(tmp_path), allow_includes=True)
+    with caplog.at_level(logging.WARNING, logger="inforsuitelb_sec.parser.inforsuitelb_parser"):
         tree = parser.parse_file(str(tmp_path / "a.conf"))
 
     names = [c.name for c in tree.children]

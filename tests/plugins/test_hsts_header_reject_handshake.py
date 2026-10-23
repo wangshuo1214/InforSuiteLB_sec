@@ -1,8 +1,8 @@
 import os
 import tempfile
 
-from gixy.core.config import Config
-from gixy.core.manager import Manager
+from inforsuitelb_sec.core.config import Config
+from inforsuitelb_sec.core.manager import Manager
 
 
 def _audit_config(config_text):

@@ -1,8 +1,8 @@
 import re
 
-import gixy
-from gixy.core.variable import compile_script
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.core.variable import compile_script
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class alias_traversal(Plugin):
@@ -17,7 +17,7 @@ class alias_traversal(Plugin):
     """
 
     summary = "Path traversal via misconfigured alias."
-    severity = gixy.severity.HIGH
+    severity = inforsuitelb_sec.severity.HIGH
     description = (
         "Using alias in a prefixed location that doesn't end with directory separator "
         "could lead to path traversal vulnerability."
@@ -39,9 +39,9 @@ class alias_traversal(Plugin):
         """Check prefix-based locations (no modifier or ^~)."""
         if not location.path.endswith("/"):
             severity = (
-                gixy.severity.HIGH
+                inforsuitelb_sec.severity.HIGH
                 if directive.path.endswith("/")
-                else gixy.severity.MEDIUM
+                else inforsuitelb_sec.severity.MEDIUM
             )
             self._report_issue(directive, location, severity)
 
@@ -86,7 +86,7 @@ class alias_traversal(Plugin):
             # Determine vulnerability based on alias structure
             if prev_part is None:
                 # Alias starts with regex variable - always dangerous
-                self._report_issue(directive, location, gixy.severity.HIGH)
+                self._report_issue(directive, location, inforsuitelb_sec.severity.HIGH)
             elif not location_has_slash_before:
                 # No slash boundary in location before capture
                 alias_has_slash_before = str(prev_part.value).endswith("/")
@@ -94,20 +94,20 @@ class alias_traversal(Plugin):
                     # alias /foo/$1 with location /bar(.*)
                     if part.can_startswith("."):
                         if part.can_contain("/"):
-                            self._report_issue(directive, location, gixy.severity.HIGH)
+                            self._report_issue(directive, location, inforsuitelb_sec.severity.HIGH)
                         else:
                             self._report_issue(
-                                directive, location, gixy.severity.MEDIUM
+                                directive, location, inforsuitelb_sec.severity.MEDIUM
                             )
                 else:
                     # alias /foo$1 with location /bar(.*)
-                    self._report_issue(directive, location, gixy.severity.MEDIUM)
+                    self._report_issue(directive, location, inforsuitelb_sec.severity.MEDIUM)
             else:
                 # Location has slash before capture - check alias
                 alias_has_slash_before = str(prev_part.value).endswith("/")
                 if not alias_has_slash_before and not part.must_startswith("/"):
                     # location /site/(.*) with alias /lol$1 (missing slash)
-                    self._report_issue(directive, location, gixy.severity.MEDIUM)
+                    self._report_issue(directive, location, inforsuitelb_sec.severity.MEDIUM)
 
             prev_part = part
 

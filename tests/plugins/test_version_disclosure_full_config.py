@@ -6,8 +6,8 @@ Test the enhanced version_disclosure plugin with full config mode support
 import os
 import tempfile
 
-from gixy.core.config import Config
-from gixy.core.manager import Manager
+from inforsuitelb_sec.core.config import Config
+from inforsuitelb_sec.core.manager import Manager
 
 
 def test_missing_server_tokens_full_config():

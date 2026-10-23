@@ -1,25 +1,25 @@
-"""Server mode for Gixy -- NDJSON over stdin/stdout."""
+"""Server mode for InforSuiteLBSec -- NDJSON over stdin/stdout."""
 
 import io
 import json
 import logging
 import sys
 
-import gixy
-from gixy.core.exceptions import InvalidConfiguration
-from gixy.core.manager import Manager
-from gixy.formatters.json import JsonFormatter
+import inforsuitelb_sec
+from inforsuitelb_sec.core.exceptions import InvalidConfiguration
+from inforsuitelb_sec.core.manager import Manager
+from inforsuitelb_sec.formatters.json import JsonFormatter
 
 LOG = logging.getLogger(__name__)
 
 
 def run_server(config):
-    """Run gixy in server mode, reading NDJSON requests from stdin.
+    """Run inforsuitelb_sec in server mode, reading NDJSON requests from stdin.
 
     Args:
-        config: Gixy Config instance with severity, allow_includes, etc.
+        config: InforSuiteLBSec Config instance with severity, allow_includes, etc.
     """
-    _write_response({"ready": True, "version": gixy.version})
+    _write_response({"ready": True, "version": inforsuitelb_sec.version})
 
     for line in sys.stdin:
         line = line.strip()
@@ -36,7 +36,7 @@ def run_server(config):
         method = request.get("method")
 
         if method == "ping":
-            _write_response({"id": req_id, "pong": True, "version": gixy.version})
+            _write_response({"id": req_id, "pong": True, "version": inforsuitelb_sec.version})
         elif method == "analyze":
             _handle_analyze(req_id, request, config)
         else:
@@ -49,7 +49,7 @@ def _handle_analyze(req_id, request, config):
     Args:
         req_id: Request ID for correlation.
         request: Parsed JSON request dict.
-        config: Gixy Config instance.
+        config: InforSuiteLBSec Config instance.
     """
     filename = request.get("filename", "<stdin>")
     content = request.get("content", "")

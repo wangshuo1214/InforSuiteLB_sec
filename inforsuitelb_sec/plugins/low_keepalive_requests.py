@@ -1,7 +1,7 @@
 """Module for low_keepalive_requests plugin."""
 
-import gixy
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class low_keepalive_requests(Plugin):
@@ -11,7 +11,7 @@ class low_keepalive_requests(Plugin):
     """
 
     summary = "The keepalive_requests directive should be at least 1000."
-    severity = gixy.severity.LOW
+    severity = inforsuitelb_sec.severity.LOW
     description = (
         "The keepalive_requests directive should be at least 1000. Any value "
         "lower than this may result in client disconnections."

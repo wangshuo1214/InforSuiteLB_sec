@@ -1,6 +1,6 @@
 """Tests for Issue and Fix classes."""
 
-from gixy.core.issue import Fix, Issue
+from inforsuitelb_sec.core.issue import Fix, Issue
 
 
 class TestFix:

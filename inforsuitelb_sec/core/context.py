@@ -1,7 +1,7 @@
 import copy
 import logging
 
-from gixy.core.utils import is_indexed_name
+from inforsuitelb_sec.core.utils import is_indexed_name
 
 LOG = logging.getLogger(__name__)
 
@@ -71,7 +71,7 @@ class Context:
         except KeyError:
             if var_type == "name":
                 # Only named variables can be builtins
-                import gixy.core.builtin_variables as builtins
+                import inforsuitelb_sec.core.builtin_variables as builtins
 
                 if builtins.is_builtin(name):
                     result = builtins.builtin_var(name)
@@ -86,7 +86,7 @@ class Context:
                     # It may be another variable outside the same http context,
                     # but we cannot traverse up and down every context. Create a
                     # fake variable so callers can resolve it on a second pass.
-                    import gixy.core.builtin_variables as builtins
+                    import inforsuitelb_sec.core.builtin_variables as builtins
 
                     result = builtins.fake_var(name)
 

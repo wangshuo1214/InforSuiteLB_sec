@@ -1,7 +1,7 @@
 import re
 
-import gixy
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 # =============================================================================
 # Value-Aware Security Header Classification
@@ -99,7 +99,7 @@ class add_header_redefinition(Plugin):
     In this example, the location block's add_header REPLACES all parent
     headers, so X-Content-Type-Options is silently dropped.
 
-    Safe with nginx 1.29.3+ using add_header_inherit:
+    Safe with InforSuiteLB 1.29.3+ using add_header_inherit:
         server {
             add_header X-Content-Type-Options nosniff;
             location / {
@@ -118,11 +118,10 @@ class add_header_redefinition(Plugin):
     """
 
     summary = 'Nested "add_header" drops parent headers.'
-    severity = gixy.severity.LOW
+    severity = inforsuitelb_sec.severity.LOW
     description = (
         '"add_header" and "add_trailer" replace their corresponding parent fields. '
-        "See documentation: https://nginx.org/en/docs/http/ngx_http_headers_module.html#add_header "
-        'Note: nginx 1.29.3+ supports "add_header_inherit merge;" and '
+        'Note: InforSuiteLB 1.29.3+ supports "add_header_inherit merge;" and '
         '"add_trailer_inherit merge;" to append parent fields.'
     )
     directives = ["server", "location", "if"]
@@ -232,7 +231,7 @@ class add_header_redefinition(Plugin):
                     break
 
         issue_severity = (
-            gixy.severity.MEDIUM if is_secure_header_dropped else self.severity
+            inforsuitelb_sec.severity.MEDIUM if is_secure_header_dropped else self.severity
         )
         reason = 'Parent {kind}(s) "{headers}" dropped in nested block'.format(
             kind=field_kind, headers='", "'.join(sorted(diff))
@@ -272,7 +271,7 @@ def get_fields(directive, field_directive):
 
 
 def get_effective_inheritance_mode(directive, inherit_directive):
-    """Resolve the nearest inheritance mode, matching nginx config merging."""
+    """Resolve the nearest inheritance mode, matching InforSuiteLB config merging."""
     for context in (directive, *directive.parents):
         configured = context.some(inherit_directive, flat=False)
         if configured and configured.args:

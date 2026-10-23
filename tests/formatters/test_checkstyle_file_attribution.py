@@ -5,12 +5,12 @@ import xml.etree.ElementTree as ET
 
 import pytest
 
-from gixy.formatters.checkstyle import CheckstyleFormatter
+from inforsuitelb_sec.formatters.checkstyle import CheckstyleFormatter
 
 
 class TestCheckstyleFileAttribution(unittest.TestCase):
     def test_main_file_after_included_file(self):
-        main = "synthetic/nginx.conf"
+        main = "synthetic/inforsuitelb.conf"
         included = "synthetic/headers.conf"
         reports = {
             main: [
@@ -34,7 +34,7 @@ class TestCheckstyleFileAttribution(unittest.TestCase):
         self.assertEqual(actual, {main: ["8"], included: ["2"]})
 
     def test_missing_location_returns_to_report_file(self):
-        main = "synthetic/nginx.conf"
+        main = "synthetic/inforsuitelb.conf"
         included = "synthetic/headers.conf"
         reports = {
             main: [
@@ -54,7 +54,7 @@ class TestCheckstyleFileAttribution(unittest.TestCase):
         self.assertEqual(actual, {main: ["1"], included: ["2"]})
 
     def test_shared_included_file_is_grouped_once(self):
-        main = "synthetic/nginx.conf"
+        main = "synthetic/inforsuitelb.conf"
         included = "synthetic/headers.conf"
         reports = {
             main: [
@@ -117,7 +117,7 @@ def test_shared_include_across_roots_preserves_every_diagnostic_and_order():
             "column": "1",
             "severity": "error",
             "message": "[sample] summary: reason",
-            "source": "gixy.sample",
+            "source": "inforsuitelb_sec.sample",
         }
     ] * 2
 

@@ -1,5 +1,5 @@
 """Entry point for the CLI."""
 
-from gixy.cli.main import main
+from inforsuitelb_sec.cli.main import main
 
 main()

@@ -1,7 +1,7 @@
 """
 Plugin to detect unsafe HTTP/2 fallback handling in a TLS default_server.
 
-Some NGINX deployments use a `default_server` with `ssl_reject_handshake on;`
+Some INFORSUITELB deployments use a `default_server` with `ssl_reject_handshake on;`
 to prevent serving arbitrary domains when SNI is missing or unknown.
 
 In certain HTTP/2 edge-cases, requests may still be processed by a default
@@ -16,13 +16,13 @@ This plugin warns when:
 - and there is no `location /` (or `location = /`) returning 421
 """
 
-import gixy
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class http2_misdirected_request(Plugin):
     summary = "Missing HTTP/2 misdirected-request safeguard (return 421)"
-    severity = gixy.severity.LOW
+    severity = inforsuitelb_sec.severity.LOW
     description = (
         "With HTTP/2 enabled, some requests may still reach a TLS default_server "
         "even when `ssl_reject_handshake` is used. Returning 421 (Misdirected Request) "

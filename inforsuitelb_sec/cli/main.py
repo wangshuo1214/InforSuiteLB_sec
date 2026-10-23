@@ -1,4 +1,4 @@
-"""Main module for Gixy CLI"""
+"""Main module for InforSuiteLBSec CLI"""
 
 import argparse
 import copy
@@ -6,14 +6,14 @@ import logging
 import os
 import sys
 
-import gixy
-from gixy.cli.argparser import create_parser
-from gixy.core.config import Config
-from gixy.core.exceptions import InvalidConfiguration
-from gixy.core.manager import Manager as Gixy
-from gixy.core.plugins_manager import PluginsManager
-from gixy.formatters import get_all as formatters
-from gixy.plugins.regex_redos import REDOCTOR_AVAILABLE
+import inforsuitelb_sec
+from inforsuitelb_sec.cli.argparser import create_parser
+from inforsuitelb_sec.core.config import Config
+from inforsuitelb_sec.core.exceptions import InvalidConfiguration
+from inforsuitelb_sec.core.manager import Manager as InforSuiteLBSec
+from inforsuitelb_sec.core.plugins_manager import PluginsManager
+from inforsuitelb_sec.formatters import get_all as formatters
+from inforsuitelb_sec.plugins.regex_redos import REDOCTOR_AVAILABLE
 
 LOG = logging.getLogger()
 
@@ -198,16 +198,16 @@ def _create_plugin_help(plugin_cls, opt_key, option):
 def _get_cli_parser():
     parser = create_parser()
     parser.add_argument(
-        "nginx_files",
+        "InforSuiteLB_files",
         nargs="*",
         type=str,
-        default=["/etc/nginx/nginx.conf"],
-        metavar="nginx.conf",
-        help="Path to nginx.conf, e.g. /etc/nginx/nginx.conf",
+        default=["/etc/inforsuitelb/inforsuitelb.conf"],
+        metavar="inforsuitelb.conf",
+        help="Path to inforsuitelb.conf, e.g. /etc/inforsuitelb/inforsuitelb.conf",
     )
 
     parser.add_argument(
-        "-v", "--version", action="version", version=f"Gixy v{gixy.version}"
+        "-v", "--version", action="version", version=f"InforSuiteLB_sec v{inforsuitelb_sec.version}"
     )
 
     parser.add_argument(
@@ -261,7 +261,7 @@ def _get_cli_parser():
         default=False,
         help=(
             "Run slower, more precise structural checks. Currently enables "
-            "ReDoctor hybrid ReDoS analysis (requires gixy-ng[deep])."
+            "ReDoctor hybrid ReDoS analysis (requires InforSuiteLB_sec[deep])."
         ),
     )
 
@@ -325,15 +325,15 @@ def _get_cli_parser():
     )
 
     parser.add_argument(
-        "--nginx-version",
-        dest="nginx_version",
+        "--inforsuitelb-version",
+        dest="inforsuitelb_version",
         type=str,
         default=None,
         metavar="X.Y.Z",
         help=(
-            "Installed nginx Open Source version (e.g. 1.29.8). Enables "
-            "the nginx_cves check to report CVEs that affect this "
-            "version. Without this flag, nginx_cves stays silent."
+            "Installed InforSuiteLB version (e.g. 1.29.8). Enables "
+            "the inforsuitelb_cves check to report CVEs that affect this "
+            "version. Without this flag, inforsuitelb_cves stays silent."
         ),
     )
 
@@ -371,29 +371,29 @@ def main():
 
     if args.server:
         try:
-            severity = gixy.severity.ALL[args.level]
+            severity = inforsuitelb_sec.severity.ALL[args.level]
         except IndexError:
-            severity = gixy.severity.ALL[0]
+            severity = inforsuitelb_sec.severity.ALL[0]
 
         config = Config(
             severity=severity,
             allow_includes=not args.disable_includes,
         )
-        from gixy.cli.server import run_server
+        from inforsuitelb_sec.cli.server import run_server
 
         run_server(config)
         sys.exit(0)
 
-    # generate a list of user-expanded absolute paths from the nginx_files input arguments
-    nginx_files = []
+    # generate a list of user-expanded absolute paths from the InforSuiteLB_files input arguments
+    InforSuiteLB_files = []
 
-    for input_path in args.nginx_files:
+    for input_path in args.InforSuiteLB_files:
         if input_path == "-":
-            if len(args.nginx_files) > 1:
+            if len(args.InforSuiteLB_files) > 1:
                 sys.stderr.write("Expected either file paths or stdin, got both.\n")
                 sys.exit(1)
 
-            nginx_files.append("-")
+            InforSuiteLB_files.append("-")
         else:
             path = os.path.expanduser(os.path.abspath(input_path))
 
@@ -403,14 +403,14 @@ def main():
                 )
                 sys.exit(1)
 
-            nginx_files.append(path)
+            InforSuiteLB_files.append(path)
 
     try:
-        severity = gixy.severity.ALL[args.level]
+        severity = inforsuitelb_sec.severity.ALL[args.level]
     except IndexError:
         sys.stderr.write(
             "Too high level filtering. Maximum level: -{0}\n".format(
-                "l" * (len(gixy.severity.ALL) - 1)
+                "l" * (len(inforsuitelb_sec.severity.ALL) - 1)
             )
         )
         sys.exit(1)
@@ -437,10 +437,10 @@ def main():
         else None,
     )
 
-    # Top-level --nginx-version aliases the auto-generated
-    # --nginx-cves-version (the dest argparse uses for the per-plugin form).
-    if args.nginx_version:
-        setattr(args, "nginx_cves:version", args.nginx_version)
+    # Top-level --inforsuitelb-version aliases the auto-generated
+    # --inforsuitelb-cves-version (the dest argparse uses for the per-plugin form).
+    if args.inforsuitelb_version:
+        setattr(args, "inforsuitelb_cves:version", args.inforsuitelb_version)
 
     # Top-level --deep enables the current deep-capable check while preserving
     # its auto-generated --regex-redos-deep per-plugin configuration option.
@@ -471,14 +471,14 @@ def main():
     if config.get_for("regex_redos").get("deep") and not REDOCTOR_AVAILABLE:
         sys.stderr.write(
             "Deep ReDoS analysis requires ReDoctor. "
-            "Install it with: pip install 'gixy-ng[deep]'\n"
+            "Install it with: pip install 'InforSuiteLB_sec[deep]'\n"
         )
         sys.exit(2)
 
     formatter = formatters()[config.output_format]()
     failed = False
-    for path in nginx_files:
-        with Gixy(config=config) as yoda:
+    for path in InforSuiteLB_files:
+        with InforSuiteLBSec(config=config) as yoda:
             try:
                 if path == "-":
                     with os.fdopen(sys.stdin.fileno(), "rb") as fdata:
@@ -498,7 +498,7 @@ def main():
             sys.stderr.write("Cannot use both --fix and --fix-dry-run\n")
             sys.exit(1)
 
-        if "-" in nginx_files:
+        if "-" in InforSuiteLB_files:
             sys.stderr.write("Cannot use --fix with stdin input\n")
             sys.exit(1)
 
@@ -553,5 +553,5 @@ def main():
 
 if (
     __name__ == "__main__"
-):  # pragma: no cover - invoked only via `python -m gixy.cli.main`
+):  # pragma: no cover - invoked only via `python -m inforsuitelb_sec.cli.main`
     main()

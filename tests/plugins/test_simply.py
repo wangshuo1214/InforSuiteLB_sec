@@ -4,10 +4,10 @@ from os import path
 
 import pytest
 
-from gixy.core.config import Config
-from gixy.core.manager import Manager as Gixy
-from gixy.core.plugins_manager import PluginsManager
-from gixy.formatters import BaseFormatter
+from inforsuitelb_sec.core.config import Config
+from inforsuitelb_sec.core.manager import Manager as InforSuiteLBSec
+from inforsuitelb_sec.core.plugins_manager import PluginsManager
+from inforsuitelb_sec.formatters import BaseFormatter
 
 from ..utils import *
 
@@ -106,7 +106,7 @@ def yoda_provider(plugin, plugin_options=None):
     config = Config(allow_includes=allow_includes, plugins=[plugin])
     if cleaned_plugin_options:
         config.set_for(plugin, cleaned_plugin_options)
-    return Gixy(config=config)
+    return InforSuiteLBSec(config=config)
 
 
 @pytest.mark.parametrize("plugin,config_path,test_config", all_config_cases)

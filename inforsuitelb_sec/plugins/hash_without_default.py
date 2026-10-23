@@ -1,12 +1,12 @@
-import gixy
-from gixy.directives.block import GeoBlock, MapBlock
-from gixy.directives.directive import MapDirective
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.directives.block import GeoBlock, MapBlock
+from inforsuitelb_sec.directives.directive import MapDirective
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class hash_without_default(Plugin):
     summary = "Detect when a hash block (map, geo) is used without a default value."
-    severity = gixy.severity.MEDIUM
+    severity = inforsuitelb_sec.severity.MEDIUM
     description = "A hash block without a default value may allow the bypassing of security controls."
     directives = ["map", "geo"]
 

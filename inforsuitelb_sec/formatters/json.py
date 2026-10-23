@@ -1,6 +1,6 @@
 import json
 
-from gixy.formatters.base import BaseFormatter
+from inforsuitelb_sec.formatters.base import BaseFormatter
 
 
 class JsonFormatter(BaseFormatter):

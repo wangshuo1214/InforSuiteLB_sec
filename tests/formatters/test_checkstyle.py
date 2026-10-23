@@ -10,14 +10,14 @@ class TestCheckstyleFormatterAvailability:
 
     def test_checkstyle_formatter_available(self):
         """Test that checkstyle formatter is registered and available."""
-        from gixy.formatters import get_all
+        from inforsuitelb_sec.formatters import get_all
 
         formatters = get_all()
         assert "checkstyle" in formatters
 
     def test_checkstyle_formatter_instantiation(self):
         """Test that formatter can be instantiated."""
-        from gixy.formatters import get_all
+        from inforsuitelb_sec.formatters import get_all
 
         formatter_cls = get_all()["checkstyle"]
         formatter = formatter_cls()
@@ -30,13 +30,13 @@ class TestCheckstyleXMLStructure:
     @pytest.fixture
     def formatter(self):
         """Create a fresh formatter instance."""
-        from gixy.formatters import get_all
+        from inforsuitelb_sec.formatters import get_all
 
         return get_all()["checkstyle"]()
 
     def test_output_is_valid_xml(self, formatter):
         """Test that output is valid, parseable XML."""
-        reports = {"/test/nginx.conf": []}
+        reports = {"/test/inforsuitelb.conf": []}
         stats = {"HIGH": 0, "MEDIUM": 0, "LOW": 0, "UNSPECIFIED": 0}
 
         output = formatter.format_reports(reports, stats)
@@ -47,7 +47,7 @@ class TestCheckstyleXMLStructure:
 
     def test_xml_declaration_present(self, formatter):
         """Test that XML declaration is included."""
-        reports = {"/test/nginx.conf": []}
+        reports = {"/test/inforsuitelb.conf": []}
         stats = {"HIGH": 0, "MEDIUM": 0, "LOW": 0, "UNSPECIFIED": 0}
 
         output = formatter.format_reports(reports, stats)
@@ -56,7 +56,7 @@ class TestCheckstyleXMLStructure:
 
     def test_checkstyle_root_element(self, formatter):
         """Test that root element is 'checkstyle' with version attribute."""
-        reports = {"/test/nginx.conf": []}
+        reports = {"/test/inforsuitelb.conf": []}
         stats = {"HIGH": 0, "MEDIUM": 0, "LOW": 0, "UNSPECIFIED": 0}
 
         output = formatter.format_reports(reports, stats)
@@ -68,8 +68,8 @@ class TestCheckstyleXMLStructure:
     def test_file_elements_created(self, formatter):
         """Test that file elements are created for each path."""
         reports = {
-            "/etc/nginx/nginx.conf": [],
-            "/etc/nginx/conf.d/default.conf": [],
+            "/etc/inforsuitelb/inforsuitelb.conf": [],
+            "/etc/inforsuitelb/conf.d/default.conf": [],
         }
         stats = {"HIGH": 0, "MEDIUM": 0, "LOW": 0, "UNSPECIFIED": 0}
 
@@ -80,13 +80,13 @@ class TestCheckstyleXMLStructure:
         assert len(file_elements) == 2
 
         paths = [f.get("name") for f in file_elements]
-        assert "/etc/nginx/nginx.conf" in paths
-        assert "/etc/nginx/conf.d/default.conf" in paths
+        assert "/etc/inforsuitelb/inforsuitelb.conf" in paths
+        assert "/etc/inforsuitelb/conf.d/default.conf" in paths
 
     def test_error_elements_have_required_attributes(self, formatter):
         """Test that error elements have all required Checkstyle attributes."""
         reports = {
-            "/test/nginx.conf": [
+            "/test/inforsuitelb.conf": [
                 {
                     "plugin": "test_plugin",
                     "summary": "Test summary",
@@ -95,7 +95,7 @@ class TestCheckstyleXMLStructure:
                     "help_url": "https://example.com",
                     "reason": "Test reason",
                     "config": "test config",
-                    "location": {"line": 42, "file": "/test/nginx.conf"},
+                    "location": {"line": 42, "file": "/test/inforsuitelb.conf"},
                 }
             ]
         }
@@ -120,12 +120,12 @@ class TestCheckstyleSeverityMapping:
 
     @pytest.fixture
     def formatter(self):
-        from gixy.formatters import get_all
+        from inforsuitelb_sec.formatters import get_all
 
         return get_all()["checkstyle"]()
 
     @pytest.mark.parametrize(
-        "gixy_severity,expected_checkstyle",
+        "inforsuitelb_sec_severity,expected_checkstyle",
         [
             ("HIGH", "error"),
             ("MEDIUM", "warning"),
@@ -133,14 +133,14 @@ class TestCheckstyleSeverityMapping:
             ("UNSPECIFIED", "info"),
         ],
     )
-    def test_severity_mapping(self, formatter, gixy_severity, expected_checkstyle):
-        """Test that gixy severities map correctly to Checkstyle severities."""
+    def test_severity_mapping(self, formatter, inforsuitelb_sec_severity, expected_checkstyle):
+        """Test that inforsuitelb_sec severities map correctly to Checkstyle severities."""
         reports = {
-            "/test/nginx.conf": [
+            "/test/inforsuitelb.conf": [
                 {
                     "plugin": "test",
                     "summary": "Test",
-                    "severity": gixy_severity,
+                    "severity": inforsuitelb_sec_severity,
                     "description": "",
                     "help_url": "",
                     "reason": "",
@@ -148,7 +148,7 @@ class TestCheckstyleSeverityMapping:
                 }
             ]
         }
-        stats = {gixy_severity: 1, "HIGH": 0, "MEDIUM": 0, "LOW": 0, "UNSPECIFIED": 0}
+        stats = {inforsuitelb_sec_severity: 1, "HIGH": 0, "MEDIUM": 0, "LOW": 0, "UNSPECIFIED": 0}
 
         output = formatter.format_reports(reports, stats)
         root = ET.fromstring(output)
@@ -159,7 +159,7 @@ class TestCheckstyleSeverityMapping:
     def test_unknown_severity_defaults_to_info(self, formatter):
         """Test that unknown severity defaults to 'info'."""
         reports = {
-            "/test/nginx.conf": [
+            "/test/inforsuitelb.conf": [
                 {
                     "plugin": "test",
                     "summary": "Test",
@@ -185,14 +185,14 @@ class TestCheckstyleMessageFormatting:
 
     @pytest.fixture
     def formatter(self):
-        from gixy.formatters import get_all
+        from inforsuitelb_sec.formatters import get_all
 
         return get_all()["checkstyle"]()
 
     def test_message_includes_plugin_name(self, formatter):
         """Test that message includes the plugin name in brackets."""
         reports = {
-            "/test/nginx.conf": [
+            "/test/inforsuitelb.conf": [
                 {
                     "plugin": "ssrf",
                     "summary": "SSRF vulnerability",
@@ -216,7 +216,7 @@ class TestCheckstyleMessageFormatting:
     def test_message_includes_summary_and_reason(self, formatter):
         """Test that message includes both summary and reason."""
         reports = {
-            "/test/nginx.conf": [
+            "/test/inforsuitelb.conf": [
                 {
                     "plugin": "host_spoofing",
                     "summary": "Host header spoofing",
@@ -241,7 +241,7 @@ class TestCheckstyleMessageFormatting:
     def test_message_without_reason(self, formatter):
         """Test message formatting when reason is empty."""
         reports = {
-            "/test/nginx.conf": [
+            "/test/inforsuitelb.conf": [
                 {
                     "plugin": "test",
                     "summary": "Test summary",
@@ -264,9 +264,9 @@ class TestCheckstyleMessageFormatting:
         assert message == "[test] Test summary"
 
     def test_source_attribute_format(self, formatter):
-        """Test that source attribute follows gixy.plugin_name format."""
+        """Test that source attribute follows inforsuitelb_sec.plugin_name format."""
         reports = {
-            "/test/nginx.conf": [
+            "/test/inforsuitelb.conf": [
                 {
                     "plugin": "add_header_redefinition",
                     "summary": "Test",
@@ -284,7 +284,7 @@ class TestCheckstyleMessageFormatting:
         root = ET.fromstring(output)
 
         error = root.find(".//error")
-        assert error.get("source") == "gixy.add_header_redefinition"
+        assert error.get("source") == "inforsuitelb_sec.add_header_redefinition"
 
 
 class TestCheckstyleLineNumbers:
@@ -292,14 +292,14 @@ class TestCheckstyleLineNumbers:
 
     @pytest.fixture
     def formatter(self):
-        from gixy.formatters import get_all
+        from inforsuitelb_sec.formatters import get_all
 
         return get_all()["checkstyle"]()
 
     def test_line_number_from_location(self, formatter):
         """Test that line number is extracted from location."""
         reports = {
-            "/test/nginx.conf": [
+            "/test/inforsuitelb.conf": [
                 {
                     "plugin": "test",
                     "summary": "Test",
@@ -308,7 +308,7 @@ class TestCheckstyleLineNumbers:
                     "help_url": "",
                     "reason": "",
                     "config": "",
-                    "location": {"line": 123, "file": "/test/nginx.conf"},
+                    "location": {"line": 123, "file": "/test/inforsuitelb.conf"},
                 }
             ]
         }
@@ -323,7 +323,7 @@ class TestCheckstyleLineNumbers:
     def test_line_defaults_to_one_when_missing(self, formatter):
         """Test that line defaults to 1 when location is missing."""
         reports = {
-            "/test/nginx.conf": [
+            "/test/inforsuitelb.conf": [
                 {
                     "plugin": "test",
                     "summary": "Test",
@@ -346,7 +346,7 @@ class TestCheckstyleLineNumbers:
     def test_line_defaults_when_location_is_none(self, formatter):
         """Test line defaults to 1 when location is explicitly None."""
         reports = {
-            "/test/nginx.conf": [
+            "/test/inforsuitelb.conf": [
                 {
                     "plugin": "test",
                     "summary": "Test",
@@ -368,9 +368,9 @@ class TestCheckstyleLineNumbers:
         assert error.get("line") == "1"
 
     def test_column_always_one(self, formatter):
-        """Test that column is always 1 (nginx doesn't track columns)."""
+        """Test that column is always 1 (InforSuiteLB doesn't track columns)."""
         reports = {
-            "/test/nginx.conf": [
+            "/test/inforsuitelb.conf": [
                 {
                     "plugin": "test",
                     "summary": "Test",
@@ -379,7 +379,7 @@ class TestCheckstyleLineNumbers:
                     "help_url": "",
                     "reason": "",
                     "config": "",
-                    "location": {"line": 50, "file": "/test/nginx.conf"},
+                    "location": {"line": 50, "file": "/test/inforsuitelb.conf"},
                 }
             ]
         }
@@ -397,14 +397,14 @@ class TestCheckstyleMultipleIssues:
 
     @pytest.fixture
     def formatter(self):
-        from gixy.formatters import get_all
+        from inforsuitelb_sec.formatters import get_all
 
         return get_all()["checkstyle"]()
 
     def test_multiple_issues_in_same_file(self, formatter):
         """Test handling multiple issues in the same file."""
         reports = {
-            "/test/nginx.conf": [
+            "/test/inforsuitelb.conf": [
                 {
                     "plugin": "ssrf",
                     "summary": "SSRF",
@@ -413,7 +413,7 @@ class TestCheckstyleMultipleIssues:
                     "help_url": "",
                     "reason": "reason1",
                     "config": "",
-                    "location": {"line": 10, "file": "/test/nginx.conf"},
+                    "location": {"line": 10, "file": "/test/inforsuitelb.conf"},
                 },
                 {
                     "plugin": "host_spoofing",
@@ -423,7 +423,7 @@ class TestCheckstyleMultipleIssues:
                     "help_url": "",
                     "reason": "reason2",
                     "config": "",
-                    "location": {"line": 25, "file": "/test/nginx.conf"},
+                    "location": {"line": 25, "file": "/test/inforsuitelb.conf"},
                 },
                 {
                     "plugin": "version_disclosure",
@@ -433,7 +433,7 @@ class TestCheckstyleMultipleIssues:
                     "help_url": "",
                     "reason": "reason3",
                     "config": "",
-                    "location": {"line": 5, "file": "/test/nginx.conf"},
+                    "location": {"line": 5, "file": "/test/inforsuitelb.conf"},
                 },
             ]
         }
@@ -447,14 +447,14 @@ class TestCheckstyleMultipleIssues:
 
         # Check all sources are present
         sources = [e.get("source") for e in errors]
-        assert "gixy.ssrf" in sources
-        assert "gixy.host_spoofing" in sources
-        assert "gixy.version_disclosure" in sources
+        assert "inforsuitelb_sec.ssrf" in sources
+        assert "inforsuitelb_sec.host_spoofing" in sources
+        assert "inforsuitelb_sec.version_disclosure" in sources
 
     def test_issues_across_multiple_files(self, formatter):
         """Test handling issues in different files."""
         reports = {
-            "/etc/nginx/nginx.conf": [
+            "/etc/inforsuitelb/inforsuitelb.conf": [
                 {
                     "plugin": "ssrf",
                     "summary": "SSRF",
@@ -463,10 +463,10 @@ class TestCheckstyleMultipleIssues:
                     "help_url": "",
                     "reason": "",
                     "config": "",
-                    "location": {"line": 10, "file": "/etc/nginx/nginx.conf"},
+                    "location": {"line": 10, "file": "/etc/inforsuitelb/inforsuitelb.conf"},
                 }
             ],
-            "/etc/nginx/conf.d/api.conf": [
+            "/etc/inforsuitelb/conf.d/api.conf": [
                 {
                     "plugin": "host_spoofing",
                     "summary": "Spoofing",
@@ -475,7 +475,7 @@ class TestCheckstyleMultipleIssues:
                     "help_url": "",
                     "reason": "",
                     "config": "",
-                    "location": {"line": 5, "file": "/etc/nginx/conf.d/api.conf"},
+                    "location": {"line": 5, "file": "/etc/inforsuitelb/conf.d/api.conf"},
                 }
             ],
         }
@@ -498,13 +498,13 @@ class TestCheckstyleEmptyReports:
 
     @pytest.fixture
     def formatter(self):
-        from gixy.formatters import get_all
+        from inforsuitelb_sec.formatters import get_all
 
         return get_all()["checkstyle"]()
 
     def test_no_issues_produces_empty_file_elements(self, formatter):
         """Test that files with no issues still get file elements."""
-        reports = {"/test/nginx.conf": []}
+        reports = {"/test/inforsuitelb.conf": []}
         stats = {"HIGH": 0, "MEDIUM": 0, "LOW": 0, "UNSPECIFIED": 0}
 
         output = formatter.format_reports(reports, stats)
@@ -512,7 +512,7 @@ class TestCheckstyleEmptyReports:
 
         files = root.findall("file")
         assert len(files) == 1
-        assert files[0].get("name") == "/test/nginx.conf"
+        assert files[0].get("name") == "/test/inforsuitelb.conf"
 
         # No error children
         errors = files[0].findall("error")
@@ -537,14 +537,14 @@ class TestCheckstyleSpecialCharacters:
 
     @pytest.fixture
     def formatter(self):
-        from gixy.formatters import get_all
+        from inforsuitelb_sec.formatters import get_all
 
         return get_all()["checkstyle"]()
 
     def test_xml_special_chars_in_message(self, formatter):
         """Test that XML special characters are properly escaped."""
         reports = {
-            "/test/nginx.conf": [
+            "/test/inforsuitelb.conf": [
                 {
                     "plugin": "test",
                     "summary": "Test <script>alert('xss')</script>",
@@ -571,7 +571,7 @@ class TestCheckstyleSpecialCharacters:
     def test_quotes_in_message(self, formatter):
         """Test that quotes are properly handled."""
         reports = {
-            "/test/nginx.conf": [
+            "/test/inforsuitelb.conf": [
                 {
                     "plugin": "test",
                     "summary": 'Test "quoted" value',
@@ -595,7 +595,7 @@ class TestCheckstyleSpecialCharacters:
     def test_special_chars_in_filepath(self, formatter):
         """Test handling special characters in file paths."""
         reports = {
-            "/etc/nginx/sites-enabled/example.com.conf": [
+            "/etc/inforsuitelb/sites-enabled/example.com.conf": [
                 {
                     "plugin": "test",
                     "summary": "Test",
@@ -613,7 +613,7 @@ class TestCheckstyleSpecialCharacters:
         root = ET.fromstring(output)
 
         file_elem = root.find("file")
-        assert file_elem.get("name") == "/etc/nginx/sites-enabled/example.com.conf"
+        assert file_elem.get("name") == "/etc/inforsuitelb/sites-enabled/example.com.conf"
 
 
 class TestCheckstyleIncludedFiles:
@@ -621,14 +621,14 @@ class TestCheckstyleIncludedFiles:
 
     @pytest.fixture
     def formatter(self):
-        from gixy.formatters import get_all
+        from inforsuitelb_sec.formatters import get_all
 
         return get_all()["checkstyle"]()
 
     def test_issue_in_included_file(self, formatter):
         """Test that issues report the correct file from location."""
         reports = {
-            "/etc/nginx/nginx.conf": [
+            "/etc/inforsuitelb/inforsuitelb.conf": [
                 {
                     "plugin": "ssrf",
                     "summary": "SSRF",
@@ -639,7 +639,7 @@ class TestCheckstyleIncludedFiles:
                     "config": "",
                     "location": {
                         "line": 15,
-                        "file": "/etc/nginx/conf.d/included.conf",
+                        "file": "/etc/inforsuitelb/conf.d/included.conf",
                     },
                 }
             ]
@@ -654,7 +654,7 @@ class TestCheckstyleIncludedFiles:
         file_names = [f.get("name") for f in files]
 
         # The included file should be present
-        assert "/etc/nginx/conf.d/included.conf" in file_names
+        assert "/etc/inforsuitelb/conf.d/included.conf" in file_names
 
 
 class TestCheckstyleRealWorldScenarios:
@@ -662,25 +662,25 @@ class TestCheckstyleRealWorldScenarios:
 
     @pytest.fixture
     def formatter(self):
-        from gixy.formatters import get_all
+        from inforsuitelb_sec.formatters import get_all
 
         return get_all()["checkstyle"]()
 
     def test_realistic_ssrf_issue(self, formatter):
         """Test formatting a realistic SSRF issue."""
         reports = {
-            "/etc/nginx/sites-enabled/api.conf": [
+            "/etc/inforsuitelb/sites-enabled/api.conf": [
                 {
                     "plugin": "ssrf",
                     "summary": "Possible SSRF vulnerability",
                     "severity": "HIGH",
                     "description": "Server Side Request Forgery",
-                    "help_url": "https://gixy.getpagespeed.com/plugins/ssrf/",
+                    "help_url": "https://docs.inforsuitelb.local/checks/ssrf/",
                     "reason": 'Variable "$backend" can be controlled by user',
                     "config": "proxy_pass http://$backend;",
                     "location": {
                         "line": 42,
-                        "file": "/etc/nginx/sites-enabled/api.conf",
+                        "file": "/etc/inforsuitelb/sites-enabled/api.conf",
                     },
                 }
             ]
@@ -699,7 +699,7 @@ class TestCheckstyleRealWorldScenarios:
     def test_realistic_multi_issue_config(self, formatter):
         """Test formatting multiple issues like a real scan would produce."""
         reports = {
-            "/etc/nginx/nginx.conf": [
+            "/etc/inforsuitelb/inforsuitelb.conf": [
                 {
                     "plugin": "version_disclosure",
                     "summary": "Server version disclosed",
@@ -708,7 +708,7 @@ class TestCheckstyleRealWorldScenarios:
                     "help_url": "",
                     "reason": "server_tokens is on",
                     "config": "server_tokens on;",
-                    "location": {"line": 3, "file": "/etc/nginx/nginx.conf"},
+                    "location": {"line": 3, "file": "/etc/inforsuitelb/inforsuitelb.conf"},
                 },
                 {
                     "plugin": "host_spoofing",
@@ -718,7 +718,7 @@ class TestCheckstyleRealWorldScenarios:
                     "help_url": "",
                     "reason": "Using $http_host",
                     "config": "proxy_set_header Host $http_host;",
-                    "location": {"line": 28, "file": "/etc/nginx/nginx.conf"},
+                    "location": {"line": 28, "file": "/etc/inforsuitelb/inforsuitelb.conf"},
                 },
                 {
                     "plugin": "ssrf",
@@ -728,7 +728,7 @@ class TestCheckstyleRealWorldScenarios:
                     "help_url": "",
                     "reason": "User controls backend",
                     "config": "proxy_pass http://$arg_url;",
-                    "location": {"line": 35, "file": "/etc/nginx/nginx.conf"},
+                    "location": {"line": 35, "file": "/etc/inforsuitelb/inforsuitelb.conf"},
                 },
             ]
         }
@@ -749,7 +749,7 @@ class TestCheckstyleRealWorldScenarios:
     def test_output_consumable_by_ci_tools(self, formatter):
         """Test that output format matches what CI tools expect."""
         reports = {
-            "/etc/nginx/nginx.conf": [
+            "/etc/inforsuitelb/inforsuitelb.conf": [
                 {
                     "plugin": "test",
                     "summary": "Test issue",
@@ -758,7 +758,7 @@ class TestCheckstyleRealWorldScenarios:
                     "help_url": "",
                     "reason": "Test reason",
                     "config": "",
-                    "location": {"line": 10, "file": "/etc/nginx/nginx.conf"},
+                    "location": {"line": 10, "file": "/etc/inforsuitelb/inforsuitelb.conf"},
                 }
             ]
         }

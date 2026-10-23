@@ -6,13 +6,13 @@ This prevents regressions in the quick fix functionality used by IDE integration
 
 import json
 
-from gixy.core.config import Config
-from gixy.core.manager import Manager
-from gixy.formatters.json import JsonFormatter
+from inforsuitelb_sec.core.config import Config
+from inforsuitelb_sec.core.manager import Manager
+from inforsuitelb_sec.formatters.json import JsonFormatter
 
 
 def get_issues_with_fixes(config_content):
-    """Helper to run gixy and get issues with fixes from JSON output."""
+    """Helper to run inforsuitelb_sec and get issues with fixes from JSON output."""
     manager = Manager(config=Config())
 
     # Create a temporary config and audit it

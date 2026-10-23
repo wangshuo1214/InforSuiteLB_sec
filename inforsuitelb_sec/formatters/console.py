@@ -1,5 +1,5 @@
-from gixy.formatters._jinja import load_template
-from gixy.formatters.base import BaseFormatter
+from inforsuitelb_sec.formatters._jinja import load_template
+from inforsuitelb_sec.formatters.base import BaseFormatter
 
 
 class ConsoleFormatter(BaseFormatter):

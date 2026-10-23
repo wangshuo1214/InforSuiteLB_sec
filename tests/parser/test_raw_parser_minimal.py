@@ -1,4 +1,4 @@
-from gixy.parser.raw_parser import RawParser
+from inforsuitelb_sec.parser.raw_parser import RawParser
 
 
 def test_directive_simple():
@@ -33,11 +33,11 @@ location = /lua {
  default_type 'text/plain';
 
  content_by_lua_block {
-     local res = ngx.location.capture("/some_other_location")
+     local res = infor.location.capture("/some_other_location")
      if res then
-         ngx.say("status: ", res.status)
-         ngx.say("body:")
-         ngx.print(res.body)
+         infor.say("status: ", res.status)
+         infor.say("body:")
+         infor.print(res.body)
      end
  }
 }
@@ -61,24 +61,24 @@ location = /lua {
     assert lua.get("args") == []
     assert lua.get("children") == []
     assert isinstance(lua.get("raw"), list) and len(lua.get("raw")) == 1
-    assert "ngx.location.capture" in lua["raw"][0]
+    assert "infor.location.capture" in lua["raw"][0]
 
 
 def test_file_delimiters_from_dump():
     config = """
-# configuration file /etc/nginx/nginx.conf:
+# configuration file /etc/inforsuitelb/inforsuitelb.conf:
 http {
     include sites/*.conf;
 }
 
-# configuration file /etc/nginx/sites/default.conf:
+# configuration file /etc/inforsuitelb/sites/default.conf:
 server {
 
 }
     """
     nodes = RawParser().parse(config)
     files = [n["file"] for n in nodes if n.get("kind") == "file_delimiter"]
-    assert files == ["/etc/nginx/nginx.conf", "/etc/nginx/sites/default.conf"]
+    assert files == ["/etc/inforsuitelb/inforsuitelb.conf", "/etc/inforsuitelb/sites/default.conf"]
 
 
 def test_inline_comments_filtered_but_standalone_kept():
@@ -102,9 +102,9 @@ def test_braced_variable_args_split():
     """
     Regression test for braced variable tokenization.
 
-    Prior to ngxparse 0.5.16, crossplane incorrectly tokenized
-    'map ${var1}${var2} $result' as having a single arg '${var1}${var2} $result'
-    instead of two separate args. This test ensures the fix works correctly.
+    A regression test for braced variable tokenization: the parser must
+    split 'map ${var1}${var2} $result' into two separate args instead of
+    treating '${var1}${var2} $result' as a single arg.
     """
     config = """
 http {

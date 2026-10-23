@@ -1,19 +1,19 @@
-"""nginx CVE database and config-trigger helpers.
+"""InforSuiteLB CVE database and config-trigger helpers.
 
 This module is intentionally underscore-prefixed: the plugin loader in
-``gixy/core/plugins_manager.py`` only imports ``gixy/plugins/*.py`` files
+``inforsuitelb_sec/core/plugins_manager.py`` only imports ``inforsuitelb_sec/plugins/*.py`` files
 that do **not** start with ``_``. Keeping the CVE table here lets us
-ship a large database without making ``nginx_cves.py`` unreadable.
+ship a large database without making ``inforsuitelb_cves.py`` unreadable.
 
 Each CVE record in ``CVES`` is a dict with the following keys:
 
     id              CVE identifier (string).
     nickname        Optional short marketing name; '' if none.
     summary         One-line issue description (string).
-    severity        gixy severity constant.
+    severity        inforsuitelb_sec severity constant.
     advisory        Authoritative URL (string).
     vulnerable_oss  Tuple of inclusive ``(low, high)`` version-tuple
-                    ranges as published in the nginx.org "Vulnerable"
+                    ranges as published in the InforSuiteLB security advisory "Vulnerable"
                     column. Disjoint branches (mainline + stable
                     backport) are represented as multiple ranges.
     fixed_oss       Iterable of fixed OSS versions in string form.
@@ -36,11 +36,11 @@ patched-stable-branch hole are correctly excluded.
 
 import re
 
-import gixy
+import inforsuitelb_sec
 
 
 def parse_oss(version_str):
-    """Parse an nginx OSS version string like ``1.29.8`` into a tuple.
+    """Parse an InforSuiteLB OSS version string like ``1.29.8`` into a tuple.
 
     Args:
         version_str: Version in ``X.Y.Z`` form. A leading ``v`` is tolerated.
@@ -116,7 +116,7 @@ def _predecessor(version):
 def ranges_excluding_fixes(spans, fixed_versions):
     """Subtract per-branch post-fix tails from the published vulnerable spans.
 
-    nginx.org lists vulnerable versions as a contiguous span (e.g.
+    The InforSuiteLB security advisory lists vulnerable versions as a contiguous span (e.g.
     ``1.11.4-1.27.3``) and fix points as a list (``1.26.3``, ``1.27.4``).
     A user on ``1.26.3`` is inside the span but on the fixed branch.
     For each fix ``(X, Y, Z)`` this helper removes ``[(X, Y, Z), (X, Y, 999)]``
@@ -176,7 +176,7 @@ def _walk_directives(root):
     """Yield every directive and block below ``root`` depth-first.
 
     Args:
-        root: Root Block of the parsed nginx config tree.
+        root: Root Block of the parsed InforSuiteLB config tree.
 
     Yields:
         Directive and Block objects in configuration order.
@@ -188,7 +188,7 @@ def _walk_directives(root):
 
 
 def _variable_refs(value):
-    """Return nginx variable names from ``value`` in evaluation order.
+    """Return InforSuiteLB variable names from ``value`` in evaluation order.
 
     Args:
         value: One directive argument or other complex-value string.
@@ -237,12 +237,12 @@ def check_map_regex_buffer_overflow(root):
 
     The first upstream reproducer places a capture affected by a regex
     ``map`` before the map output in the same complex-value expression.
-    Evaluating the map changes the capture between nginx's length and copy
+    Evaluating the map changes the capture between InforSuiteLB's length and copy
     passes. The second reproducer consumes a regex map marked ``volatile``,
     whose non-cacheable result can likewise change between those passes.
 
     Args:
-        root: Root Block of the parsed nginx config tree.
+        root: Root Block of the parsed InforSuiteLB config tree.
 
     Yields:
         ``(consumer, map_block)`` pairs for each unsafe expression.
@@ -281,7 +281,7 @@ def check_unnamed_capture_subrequest(root):
     """Find unnamed captures exposed to CVE-2026-60005 subrequests.
 
     Args:
-        root: Root Block of the parsed nginx config tree.
+        root: Root Block of the parsed InforSuiteLB config tree.
 
     Yields:
         ``(capture_consumer, subrequest_trigger)`` tuples where an unnamed
@@ -315,7 +315,7 @@ def check_ssi_unbuffered_proxy(root):
     """Find unbuffered SSI proxying exposed to CVE-2026-56434.
 
     Args:
-        root: Root Block of the parsed nginx config tree.
+        root: Root Block of the parsed InforSuiteLB config tree.
 
     Yields:
         ``(proxy_pass, proxy_buffering)`` tuples where effective settings
@@ -340,7 +340,7 @@ def check_rewrite_rift(root):
     sibling in the same parent context.
 
     Args:
-        root: Root Block of the parsed nginx config tree.
+        root: Root Block of the parsed InforSuiteLB config tree.
 
     Yields:
         ``(rewrite_directive, follow_up_sibling)`` tuples for each match.
@@ -433,7 +433,7 @@ def check_http2_enabled(root):
     """Yield directives that enable HTTP/2.
 
     Detects both the legacy ``listen ... http2`` parameter and the
-    standalone ``http2 on;`` directive introduced in nginx 1.25.1.
+    standalone ``http2 on;`` directive introduced in InforSuiteLB 1.25.1.
 
     Args:
         root: Root Block of the parsed config.
@@ -853,7 +853,7 @@ def _uses_request_filename(context):
                 return True
 
     logs = _effective_directives(context, "access_log")
-    # NGINX's off flag cancels every log at this level, in either order.
+    # INFORSUITELB's off flag cancels every log at this level, in either order.
     if any(log.args and log.args[0] == "off" for log in logs):
         return False
 
@@ -861,7 +861,7 @@ def _uses_request_filename(context):
     formats = {}
     for directive in http.find("log_format"):
         if directive.args:
-            # NGINX compares format names in order, folding only ASCII case.
+            # INFORSUITELB compares format names in order, folding only ASCII case.
             name = directive.args[0].encode("utf-8").lower()
             formats.setdefault(name, directive)
     for log in logs:
@@ -899,7 +899,7 @@ def check_alias_with_rewrite(root):
     """Find alias, rewrite and filename-consumer prerequisites for CVE-2026-15176.
 
     Args:
-        root: Root Block of the parsed nginx config tree.
+        root: Root Block of the parsed InforSuiteLB config tree.
 
     Yields:
         Unique ``(alias, rewrite)`` pairs with an applicable direct/braced
@@ -1002,7 +1002,7 @@ def check_ssi_with_aio(root):
 # --------------------------------------------------------------------------
 
 _ADVISORY_NVD = "https://nvd.nist.gov/vuln/detail/"
-_ADVISORY_NGINX = "https://nginx.org/en/security_advisories.html"
+_ADVISORY_INFORSUITELB = "https://docs.inforsuitelb.local/security_advisories.html"
 
 
 def _advisory(cve_id):
@@ -1022,7 +1022,7 @@ CVES = (
         "id": "CVE-2026-15176",
         "nickname": "",
         "summary": "Buffer overflow when using alias with rewrite.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2026-15176"),
         "vulnerable_oss": (((0, 1, 29), (1, 31, 6)),),
         "fixed_oss": ("1.30.6", "1.31.7"),
@@ -1033,7 +1033,7 @@ CVES = (
         "id": "CVE-2026-93479",
         "nickname": "",
         "summary": "Buffer overflow when evaluating string expressions with variables.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2026-93479"),
         "vulnerable_oss": (
             ((1, 30, 0), (1, 30, 5)),
@@ -1049,7 +1049,7 @@ CVES = (
         "id": "CVE-2026-95101",
         "nickname": "",
         "summary": "Request body injection in HTTP/3.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2026-95101"),
         "vulnerable_oss": (((1, 25, 0), (1, 31, 6)),),
         "fixed_oss": ("1.30.6", "1.31.7"),
@@ -1060,7 +1060,7 @@ CVES = (
         "id": "CVE-2026-97629",
         "nickname": "",
         "summary": "Session forgery when using TLS session ticket key rotation.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2026-97629"),
         "vulnerable_oss": (((1, 23, 2), (1, 31, 6)),),
         "fixed_oss": ("1.30.6", "1.31.7"),
@@ -1070,8 +1070,8 @@ CVES = (
     {
         "id": "CVE-2026-97205",
         "nickname": "",
-        "summary": "Use-after-free in ngx_http_ssi_module when using AIO.",
-        "severity": gixy.severity.MEDIUM,
+        "summary": "Use-after-free in infor_http_ssi_module when using AIO.",
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2026-97205"),
         "vulnerable_oss": (((0, 8, 11), (1, 31, 6)),),
         "fixed_oss": ("1.30.6", "1.31.7"),
@@ -1081,8 +1081,8 @@ CVES = (
     {
         "id": "CVE-2026-90439",
         "nickname": "",
-        "summary": "Buffer overflow in ngx_http_v3_module.",
-        "severity": gixy.severity.MEDIUM,
+        "summary": "Buffer overflow in infor_http_v3_module.",
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2026-90439"),
         "vulnerable_oss": (((1, 29, 2), (1, 31, 5)),),
         "fixed_oss": ("1.30.5", "1.31.6"),
@@ -1093,7 +1093,7 @@ CVES = (
         "id": "CVE-2026-42533",
         "nickname": "",
         "summary": "Heap buffer overflow when using map with regex matching.",
-        "severity": gixy.severity.HIGH,
+        "severity": inforsuitelb_sec.severity.HIGH,
         "advisory": _advisory("CVE-2026-42533"),
         "vulnerable_oss": (((0, 9, 6), (1, 31, 2)),),
         "fixed_oss": ("1.30.4", "1.31.3"),
@@ -1103,8 +1103,8 @@ CVES = (
     {
         "id": "CVE-2026-60005",
         "nickname": "",
-        "summary": "Uninitialized memory access in ngx_http_slice_module.",
-        "severity": gixy.severity.MEDIUM,
+        "summary": "Uninitialized memory access in infor_http_slice_module.",
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2026-60005"),
         "vulnerable_oss": (((1, 15, 8), (1, 31, 2)),),
         "fixed_oss": ("1.30.4", "1.31.3"),
@@ -1114,8 +1114,8 @@ CVES = (
     {
         "id": "CVE-2026-56434",
         "nickname": "",
-        "summary": "Use-after-free in ngx_http_ssi_module.",
-        "severity": gixy.severity.MEDIUM,
+        "summary": "Use-after-free in infor_http_ssi_module.",
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2026-56434"),
         "vulnerable_oss": (((0, 8, 11), (1, 31, 2)),),
         "fixed_oss": ("1.30.4", "1.31.3"),
@@ -1125,8 +1125,8 @@ CVES = (
     {
         "id": "CVE-2026-42530",
         "nickname": "",
-        "summary": "Use-after-free in ngx_http_v3_module.",
-        "severity": gixy.severity.HIGH,
+        "summary": "Use-after-free in infor_http_v3_module.",
+        "severity": inforsuitelb_sec.severity.HIGH,
         "advisory": _advisory("CVE-2026-42530"),
         "vulnerable_oss": (((1, 31, 0), (1, 31, 1)),),
         "fixed_oss": ("1.31.2",),
@@ -1136,8 +1136,8 @@ CVES = (
     {
         "id": "CVE-2026-42055",
         "nickname": "",
-        "summary": "Buffer overflow in ngx_http_proxy_v2_module and ngx_http_grpc_module.",
-        "severity": gixy.severity.MEDIUM,
+        "summary": "Buffer overflow in infor_http_proxy_v2_module and infor_http_grpc_module.",
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2026-42055"),
         "vulnerable_oss": (((1, 13, 10), (1, 31, 1)),),
         "fixed_oss": ("1.30.3", "1.31.2"),
@@ -1147,8 +1147,8 @@ CVES = (
     {
         "id": "CVE-2026-48142",
         "nickname": "",
-        "summary": "Buffer overread in ngx_http_charset_module.",
-        "severity": gixy.severity.LOW,
+        "summary": "Buffer overread in infor_http_charset_module.",
+        "severity": inforsuitelb_sec.severity.LOW,
         "advisory": _advisory("CVE-2026-48142"),
         "vulnerable_oss": (((0, 3, 50), (1, 31, 1)),),
         "fixed_oss": ("1.30.3", "1.31.2"),
@@ -1158,8 +1158,8 @@ CVES = (
     {
         "id": "CVE-2026-9256",
         "nickname": "",
-        "summary": "Heap overflow in ngx_http_rewrite_module triggered by overlapping captures.",
-        "severity": gixy.severity.HIGH,
+        "summary": "Heap overflow in infor_http_rewrite_module triggered by overlapping captures.",
+        "severity": inforsuitelb_sec.severity.HIGH,
         "advisory": _advisory("CVE-2026-9256"),
         "vulnerable_oss": (((0, 1, 17), (1, 31, 0)),),
         "fixed_oss": ("1.30.2", "1.31.1"),
@@ -1168,9 +1168,9 @@ CVES = (
     },
     {
         "id": "CVE-2026-42945",
-        "nickname": "NGINX Rift",
-        "summary": "Heap overflow in ngx_http_rewrite_module.",
-        "severity": gixy.severity.HIGH,
+        "nickname": "INFORSUITELB Rift",
+        "summary": "Heap overflow in infor_http_rewrite_module.",
+        "severity": inforsuitelb_sec.severity.HIGH,
         "advisory": _advisory("CVE-2026-42945"),
         "vulnerable_oss": (((0, 6, 27), (1, 30, 0)),),
         "fixed_oss": ("1.30.1", "1.31.0"),
@@ -1180,8 +1180,8 @@ CVES = (
     {
         "id": "CVE-2026-42926",
         "nickname": "",
-        "summary": "HTTP/2 request injection in ngx_http_proxy_module.",
-        "severity": gixy.severity.MEDIUM,
+        "summary": "HTTP/2 request injection in infor_http_proxy_module.",
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2026-42926"),
         "vulnerable_oss": (((1, 29, 4), (1, 30, 0)),),
         "fixed_oss": ("1.30.1", "1.31.0"),
@@ -1191,8 +1191,8 @@ CVES = (
     {
         "id": "CVE-2026-42946",
         "nickname": "",
-        "summary": "Buffer overread in ngx_http_scgi_module and ngx_http_uwsgi_module.",
-        "severity": gixy.severity.MEDIUM,
+        "summary": "Buffer overread in infor_http_scgi_module and infor_http_uwsgi_module.",
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2026-42946"),
         "vulnerable_oss": (((0, 8, 42), (1, 30, 0)),),
         "fixed_oss": ("1.30.1", "1.31.0"),
@@ -1202,8 +1202,8 @@ CVES = (
     {
         "id": "CVE-2026-42934",
         "nickname": "",
-        "summary": "Buffer overread in ngx_http_charset_module.",
-        "severity": gixy.severity.LOW,
+        "summary": "Buffer overread in infor_http_charset_module.",
+        "severity": inforsuitelb_sec.severity.LOW,
         "advisory": _advisory("CVE-2026-42934"),
         "vulnerable_oss": (((0, 3, 50), (1, 30, 0)),),
         "fixed_oss": ("1.30.1", "1.31.0"),
@@ -1214,7 +1214,7 @@ CVES = (
         "id": "CVE-2026-40460",
         "nickname": "",
         "summary": "HTTP/3 address spoofing.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2026-40460"),
         "vulnerable_oss": (((1, 25, 0), (1, 30, 0)),),
         "fixed_oss": ("1.30.1", "1.31.0"),
@@ -1225,7 +1225,7 @@ CVES = (
         "id": "CVE-2026-40701",
         "nickname": "",
         "summary": "Use-after-free in resolver during OCSP processing.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2026-40701"),
         "vulnerable_oss": (((1, 19, 0), (1, 30, 0)),),
         "fixed_oss": ("1.30.1", "1.31.0"),
@@ -1235,8 +1235,8 @@ CVES = (
     {
         "id": "CVE-2026-27654",
         "nickname": "",
-        "summary": "Buffer overflow in ngx_http_dav_module.",
-        "severity": gixy.severity.MEDIUM,
+        "summary": "Buffer overflow in infor_http_dav_module.",
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2026-27654"),
         "vulnerable_oss": (((0, 5, 13), (1, 29, 6)),),
         "fixed_oss": ("1.28.3", "1.29.7"),
@@ -1246,8 +1246,8 @@ CVES = (
     {
         "id": "CVE-2026-27784",
         "nickname": "",
-        "summary": "Buffer overflow in ngx_http_mp4_module.",
-        "severity": gixy.severity.MEDIUM,
+        "summary": "Buffer overflow in infor_http_mp4_module.",
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2026-27784"),
         "vulnerable_oss": (((1, 1, 19), (1, 29, 6)),),
         "fixed_oss": ("1.28.3", "1.29.7"),
@@ -1257,8 +1257,8 @@ CVES = (
     {
         "id": "CVE-2026-32647",
         "nickname": "",
-        "summary": "Buffer overflow in ngx_http_mp4_module.",
-        "severity": gixy.severity.MEDIUM,
+        "summary": "Buffer overflow in infor_http_mp4_module.",
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2026-32647"),
         "vulnerable_oss": (((1, 1, 19), (1, 29, 6)),),
         "fixed_oss": ("1.28.3", "1.29.7"),
@@ -1269,7 +1269,7 @@ CVES = (
         "id": "CVE-2026-27651",
         "nickname": "",
         "summary": "NULL pointer dereference while using CRAM-MD5 or APOP authentication.",
-        "severity": gixy.severity.LOW,
+        "severity": inforsuitelb_sec.severity.LOW,
         "advisory": _advisory("CVE-2026-27651"),
         "vulnerable_oss": (((0, 5, 15), (1, 29, 6)),),
         "fixed_oss": ("1.28.3", "1.29.7"),
@@ -1280,7 +1280,7 @@ CVES = (
         "id": "CVE-2026-28753",
         "nickname": "",
         "summary": "Injection in mail auth_http and XCLIENT.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2026-28753"),
         "vulnerable_oss": (((0, 6, 27), (1, 29, 6)),),
         "fixed_oss": ("1.28.3", "1.29.7"),
@@ -1291,7 +1291,7 @@ CVES = (
         "id": "CVE-2026-28755",
         "nickname": "",
         "summary": "OCSP result bypass in stream module.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2026-28755"),
         "vulnerable_oss": (((1, 27, 2), (1, 29, 6)),),
         "fixed_oss": ("1.28.3", "1.29.7"),
@@ -1302,7 +1302,7 @@ CVES = (
         "id": "CVE-2026-1642",
         "nickname": "",
         "summary": "SSL upstream injection.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2026-1642"),
         "vulnerable_oss": (((1, 3, 0), (1, 29, 4)),),
         "fixed_oss": ("1.28.2", "1.29.5"),
@@ -1312,8 +1312,8 @@ CVES = (
     {
         "id": "CVE-2025-53859",
         "nickname": "",
-        "summary": "Buffer overread in ngx_mail_smtp_module.",
-        "severity": gixy.severity.LOW,
+        "summary": "Buffer overread in infor_mail_smtp_module.",
+        "severity": inforsuitelb_sec.severity.LOW,
         "advisory": _advisory("CVE-2025-53859"),
         "vulnerable_oss": (((0, 7, 22), (1, 29, 0)),),
         "fixed_oss": ("1.29.1",),
@@ -1324,7 +1324,7 @@ CVES = (
         "id": "CVE-2025-23419",
         "nickname": "",
         "summary": "SSL session reuse vulnerability allowing authentication bypass.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2025-23419"),
         "vulnerable_oss": (((1, 11, 4), (1, 27, 3)),),
         "fixed_oss": ("1.26.3", "1.27.4"),
@@ -1334,8 +1334,8 @@ CVES = (
     {
         "id": "CVE-2024-7347",
         "nickname": "",
-        "summary": "Buffer overread in ngx_http_mp4_module.",
-        "severity": gixy.severity.LOW,
+        "summary": "Buffer overread in infor_http_mp4_module.",
+        "severity": inforsuitelb_sec.severity.LOW,
         "advisory": _advisory("CVE-2024-7347"),
         "vulnerable_oss": (((1, 5, 13), (1, 27, 0)),),
         "fixed_oss": ("1.26.2", "1.27.1"),
@@ -1346,7 +1346,7 @@ CVES = (
         "id": "CVE-2024-32760",
         "nickname": "",
         "summary": "Buffer overwrite in HTTP/3.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2024-32760"),
         "vulnerable_oss": (
             ((1, 25, 0), (1, 25, 5)),
@@ -1360,7 +1360,7 @@ CVES = (
         "id": "CVE-2024-31079",
         "nickname": "",
         "summary": "Stack overflow and use-after-free in HTTP/3.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2024-31079"),
         "vulnerable_oss": (
             ((1, 25, 0), (1, 25, 5)),
@@ -1374,7 +1374,7 @@ CVES = (
         "id": "CVE-2024-35200",
         "nickname": "",
         "summary": "NULL pointer dereference in HTTP/3.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2024-35200"),
         "vulnerable_oss": (
             ((1, 25, 0), (1, 25, 5)),
@@ -1388,7 +1388,7 @@ CVES = (
         "id": "CVE-2024-34161",
         "nickname": "",
         "summary": "Memory disclosure in HTTP/3.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2024-34161"),
         "vulnerable_oss": (
             ((1, 25, 0), (1, 25, 5)),
@@ -1402,7 +1402,7 @@ CVES = (
         "id": "CVE-2024-24989",
         "nickname": "",
         "summary": "NULL pointer dereference in HTTP/3.",
-        "severity": gixy.severity.HIGH,
+        "severity": inforsuitelb_sec.severity.HIGH,
         "advisory": _advisory("CVE-2024-24989"),
         "vulnerable_oss": (((1, 25, 3), (1, 25, 3)),),
         "fixed_oss": ("1.25.4",),
@@ -1413,7 +1413,7 @@ CVES = (
         "id": "CVE-2024-24990",
         "nickname": "",
         "summary": "Use-after-free in HTTP/3.",
-        "severity": gixy.severity.HIGH,
+        "severity": inforsuitelb_sec.severity.HIGH,
         "advisory": _advisory("CVE-2024-24990"),
         "vulnerable_oss": (((1, 25, 0), (1, 25, 3)),),
         "fixed_oss": ("1.25.4",),
@@ -1423,8 +1423,8 @@ CVES = (
     {
         "id": "CVE-2022-41741",
         "nickname": "",
-        "summary": "Memory corruption in ngx_http_mp4_module.",
-        "severity": gixy.severity.MEDIUM,
+        "summary": "Memory corruption in infor_http_mp4_module.",
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2022-41741"),
         "vulnerable_oss": (
             ((1, 1, 3), (1, 23, 1)),
@@ -1437,8 +1437,8 @@ CVES = (
     {
         "id": "CVE-2022-41742",
         "nickname": "",
-        "summary": "Memory disclosure in ngx_http_mp4_module.",
-        "severity": gixy.severity.MEDIUM,
+        "summary": "Memory disclosure in infor_http_mp4_module.",
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2022-41742"),
         "vulnerable_oss": (
             ((1, 1, 3), (1, 23, 1)),
@@ -1452,7 +1452,7 @@ CVES = (
         "id": "CVE-2021-23017",
         "nickname": "",
         "summary": "1-byte memory overwrite in resolver.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2021-23017"),
         "vulnerable_oss": (((0, 6, 18), (1, 20, 0)),),
         "fixed_oss": ("1.20.1", "1.21.0"),
@@ -1463,7 +1463,7 @@ CVES = (
         "id": "CVE-2019-9511",
         "nickname": "Data Dribble",
         "summary": "Excessive CPU usage via HTTP/2 small window updates.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2019-9511"),
         "vulnerable_oss": (((1, 9, 5), (1, 17, 2)),),
         "fixed_oss": ("1.16.1", "1.17.3"),
@@ -1474,7 +1474,7 @@ CVES = (
         "id": "CVE-2019-9513",
         "nickname": "Resource Loop",
         "summary": "Excessive CPU usage via HTTP/2 priority changes.",
-        "severity": gixy.severity.LOW,
+        "severity": inforsuitelb_sec.severity.LOW,
         "advisory": _advisory("CVE-2019-9513"),
         "vulnerable_oss": (((1, 9, 5), (1, 17, 2)),),
         "fixed_oss": ("1.16.1", "1.17.3"),
@@ -1485,7 +1485,7 @@ CVES = (
         "id": "CVE-2019-9516",
         "nickname": "0-Length Headers Leak",
         "summary": "Excessive memory usage via HTTP/2 zero-length headers.",
-        "severity": gixy.severity.LOW,
+        "severity": inforsuitelb_sec.severity.LOW,
         "advisory": _advisory("CVE-2019-9516"),
         "vulnerable_oss": (((1, 9, 5), (1, 17, 2)),),
         "fixed_oss": ("1.16.1", "1.17.3"),
@@ -1496,7 +1496,7 @@ CVES = (
         "id": "CVE-2018-16843",
         "nickname": "",
         "summary": "Excessive memory usage in HTTP/2 implementation.",
-        "severity": gixy.severity.LOW,
+        "severity": inforsuitelb_sec.severity.LOW,
         "advisory": _advisory("CVE-2018-16843"),
         "vulnerable_oss": (((1, 9, 5), (1, 15, 5)),),
         "fixed_oss": ("1.14.1", "1.15.6"),
@@ -1507,7 +1507,7 @@ CVES = (
         "id": "CVE-2018-16844",
         "nickname": "",
         "summary": "Excessive CPU usage in HTTP/2 implementation.",
-        "severity": gixy.severity.LOW,
+        "severity": inforsuitelb_sec.severity.LOW,
         "advisory": _advisory("CVE-2018-16844"),
         "vulnerable_oss": (((1, 9, 5), (1, 15, 5)),),
         "fixed_oss": ("1.14.1", "1.15.6"),
@@ -1517,8 +1517,8 @@ CVES = (
     {
         "id": "CVE-2018-16845",
         "nickname": "",
-        "summary": "Memory disclosure in ngx_http_mp4_module.",
-        "severity": gixy.severity.MEDIUM,
+        "summary": "Memory disclosure in infor_http_mp4_module.",
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2018-16845"),
         "vulnerable_oss": (
             ((1, 1, 3), (1, 15, 5)),
@@ -1532,7 +1532,7 @@ CVES = (
         "id": "CVE-2017-7529",
         "nickname": "",
         "summary": "Integer overflow in the range filter.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2017-7529"),
         "vulnerable_oss": (((0, 5, 6), (1, 13, 2)),),
         "fixed_oss": ("1.12.1", "1.13.3"),
@@ -1543,7 +1543,7 @@ CVES = (
         "id": "CVE-2016-4450",
         "nickname": "",
         "summary": "NULL pointer dereference while writing client request body.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2016-4450"),
         "vulnerable_oss": (((1, 3, 9), (1, 11, 0)),),
         "fixed_oss": ("1.10.1", "1.11.1"),
@@ -1554,7 +1554,7 @@ CVES = (
         "id": "CVE-2016-0742",
         "nickname": "",
         "summary": "Invalid pointer dereference in resolver.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2016-0742"),
         "vulnerable_oss": (((0, 6, 18), (1, 9, 9)),),
         "fixed_oss": ("1.8.1", "1.9.10"),
@@ -1565,7 +1565,7 @@ CVES = (
         "id": "CVE-2016-0746",
         "nickname": "",
         "summary": "Use-after-free during CNAME response processing in resolver.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2016-0746"),
         "vulnerable_oss": (((0, 6, 18), (1, 9, 9)),),
         "fixed_oss": ("1.8.1", "1.9.10"),
@@ -1576,7 +1576,7 @@ CVES = (
         "id": "CVE-2016-0747",
         "nickname": "",
         "summary": "Insufficient limits of CNAME resolution in resolver.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2016-0747"),
         "vulnerable_oss": (((0, 6, 18), (1, 9, 9)),),
         "fixed_oss": ("1.8.1", "1.9.10"),
@@ -1587,7 +1587,7 @@ CVES = (
         "id": "CVE-2014-3616",
         "nickname": "",
         "summary": "SSL session reuse vulnerability.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2014-3616"),
         "vulnerable_oss": (((0, 5, 6), (1, 7, 4)),),
         "fixed_oss": ("1.6.2", "1.7.5"),
@@ -1598,7 +1598,7 @@ CVES = (
         "id": "CVE-2014-3556",
         "nickname": "",
         "summary": "STARTTLS command injection.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2014-3556"),
         "vulnerable_oss": (((1, 5, 6), (1, 7, 3)),),
         "fixed_oss": ("1.6.1", "1.7.4"),
@@ -1609,7 +1609,7 @@ CVES = (
         "id": "CVE-2014-0133",
         "nickname": "",
         "summary": "SPDY heap buffer overflow.",
-        "severity": gixy.severity.HIGH,
+        "severity": inforsuitelb_sec.severity.HIGH,
         "advisory": _advisory("CVE-2014-0133"),
         "vulnerable_oss": (((1, 3, 15), (1, 5, 11)),),
         "fixed_oss": ("1.4.7", "1.5.12"),
@@ -1620,7 +1620,7 @@ CVES = (
         "id": "CVE-2014-0088",
         "nickname": "",
         "summary": "SPDY memory corruption.",
-        "severity": gixy.severity.HIGH,
+        "severity": inforsuitelb_sec.severity.HIGH,
         "advisory": _advisory("CVE-2014-0088"),
         "vulnerable_oss": (((1, 5, 10), (1, 5, 10)),),
         "fixed_oss": ("1.5.11",),
@@ -1631,7 +1631,7 @@ CVES = (
         "id": "CVE-2013-4547",
         "nickname": "",
         "summary": "Request line parsing vulnerability.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2013-4547"),
         "vulnerable_oss": (((0, 8, 41), (1, 5, 6)),),
         "fixed_oss": ("1.4.4", "1.5.7"),
@@ -1642,7 +1642,7 @@ CVES = (
         "id": "CVE-2013-2070",
         "nickname": "",
         "summary": "Memory disclosure with specially crafted HTTP backend responses.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2013-2070"),
         "vulnerable_oss": (
             ((1, 1, 4), (1, 2, 8)),
@@ -1656,7 +1656,7 @@ CVES = (
         "id": "CVE-2013-2028",
         "nickname": "",
         "summary": "Stack-based buffer overflow with specially crafted request.",
-        "severity": gixy.severity.HIGH,
+        "severity": inforsuitelb_sec.severity.HIGH,
         "advisory": _advisory("CVE-2013-2028"),
         "vulnerable_oss": (((1, 3, 9), (1, 4, 0)),),
         "fixed_oss": ("1.4.1", "1.5.0"),
@@ -1666,8 +1666,8 @@ CVES = (
     {
         "id": "CVE-2012-2089",
         "nickname": "",
-        "summary": "Buffer overflow in ngx_http_mp4_module.",
-        "severity": gixy.severity.HIGH,
+        "summary": "Buffer overflow in infor_http_mp4_module.",
+        "severity": inforsuitelb_sec.severity.HIGH,
         "advisory": _advisory("CVE-2012-2089"),
         "vulnerable_oss": (
             ((1, 1, 3), (1, 1, 18)),
@@ -1681,7 +1681,7 @@ CVES = (
         "id": "CVE-2012-1180",
         "nickname": "",
         "summary": "Memory disclosure with specially crafted backend responses.",
-        "severity": gixy.severity.HIGH,
+        "severity": inforsuitelb_sec.severity.HIGH,
         "advisory": _advisory("CVE-2012-1180"),
         "vulnerable_oss": (((0, 1, 0), (1, 1, 16)),),
         "fixed_oss": ("1.0.14", "1.1.17"),
@@ -1692,7 +1692,7 @@ CVES = (
         "id": "CVE-2011-4315",
         "nickname": "",
         "summary": "Buffer overflow in resolver.",
-        "severity": gixy.severity.MEDIUM,
+        "severity": inforsuitelb_sec.severity.MEDIUM,
         "advisory": _advisory("CVE-2011-4315"),
         "vulnerable_oss": (((0, 6, 18), (1, 1, 7)),),
         "fixed_oss": ("1.0.10", "1.1.8"),
@@ -1703,7 +1703,7 @@ CVES = (
         "id": "CVE-2009-3898",
         "nickname": "",
         "summary": "Directory traversal vulnerability.",
-        "severity": gixy.severity.LOW,
+        "severity": inforsuitelb_sec.severity.LOW,
         "advisory": _advisory("CVE-2009-3898"),
         "vulnerable_oss": (((0, 1, 0), (0, 8, 16)),),
         "fixed_oss": ("0.7.63", "0.8.17"),
@@ -1714,7 +1714,7 @@ CVES = (
         "id": "CVE-2009-3896",
         "nickname": "",
         "summary": "NULL pointer dereference vulnerability.",
-        "severity": gixy.severity.HIGH,
+        "severity": inforsuitelb_sec.severity.HIGH,
         "advisory": _advisory("CVE-2009-3896"),
         "vulnerable_oss": (((0, 1, 0), (0, 8, 13)),),
         "fixed_oss": ("0.5.38", "0.6.39", "0.7.62", "0.8.14"),
@@ -1725,7 +1725,7 @@ CVES = (
         "id": "CVE-2009-3555",
         "nickname": "",
         "summary": "TLS renegotiation vulnerability in SSL protocol.",
-        "severity": gixy.severity.HIGH,
+        "severity": inforsuitelb_sec.severity.HIGH,
         "advisory": _advisory("CVE-2009-3555"),
         "vulnerable_oss": (((0, 1, 0), (0, 8, 22)),),
         "fixed_oss": ("0.7.64", "0.8.23"),
@@ -1736,7 +1736,7 @@ CVES = (
         "id": "CVE-2009-2629",
         "nickname": "",
         "summary": "Buffer underflow vulnerability.",
-        "severity": gixy.severity.HIGH,
+        "severity": inforsuitelb_sec.severity.HIGH,
         "advisory": _advisory("CVE-2009-2629"),
         "vulnerable_oss": (((0, 1, 0), (0, 8, 14)),),
         "fixed_oss": ("0.5.38", "0.6.39", "0.7.62", "0.8.15"),

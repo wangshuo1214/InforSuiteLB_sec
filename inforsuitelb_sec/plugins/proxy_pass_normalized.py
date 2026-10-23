@@ -1,8 +1,8 @@
 import re
 from urllib.parse import urlparse
 
-import gixy
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class proxy_pass_normalized(Plugin):
@@ -15,7 +15,7 @@ class proxy_pass_normalized(Plugin):
     """
 
     summary = "Detect path after host in proxy_pass (potential URL decoding issue)"
-    severity = gixy.severity.MEDIUM
+    severity = inforsuitelb_sec.severity.MEDIUM
     description = (
         "A path (beginning with a slash) after the host in proxy_pass is "
         "decoded and normalized before proxying downstream. This can cause "

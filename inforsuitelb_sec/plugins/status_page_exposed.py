@@ -1,14 +1,14 @@
-import gixy
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class status_page_exposed(Plugin):
     """Detect stub_status directives that are publicly accessible without IP restrictions."""
 
     summary = "stub_status is publicly accessible without IP restrictions."
-    severity = gixy.severity.MEDIUM
+    severity = inforsuitelb_sec.severity.MEDIUM
     description = (
-        "The stub_status module exposes NGINX server metrics including "
+        "The stub_status module exposes INFORSUITELB server metrics including "
         "active connections, requests handled, and connection states. "
         "Without proper IP restrictions, this information is accessible "
         "to anyone and can aid attackers in reconnaissance."

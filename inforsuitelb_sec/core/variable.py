@@ -1,22 +1,22 @@
 import logging
 import re
 
-from gixy.core.context import get_context
-from gixy.core.regexp import Regexp
+from inforsuitelb_sec.core.context import get_context
+from inforsuitelb_sec.core.regexp import Regexp
 
 LOG = logging.getLogger(__name__)
-# See ngx_http_script_compile in http/ngx_http_script.c
+# See infor_http_script_compile in http/infor_http_script.c
 EXTRACT_RE = re.compile(r"\$([1-9]|[a-z_][a-z0-9_]*|\{[a-z0-9_]+\})", re.IGNORECASE)
 
 
 def compile_script(script, ctx=None):
     """
-    Compile Nginx script to list of variables.
+    Compile InforSuiteLB script to list of variables.
     Example:
         compile_script('http://$foo:$bar') ->
             [Variable('http://'), Variable($foo), Variable(':', Variable($bar).
 
-    :param str script: Nginx script.
+    :param str script: InforSuiteLB script.
     :return Variable[]: list of variable.
     """
     depends = []
@@ -51,13 +51,13 @@ class Variable:
         ctx=None,
     ):
         """
-        Gixy Nginx variable class - parse and provide helpers to work with it.
+        InforSuiteLBSec InforSuiteLB variable class - parse and provide helpers to work with it.
 
         :param str|None name: variable name.
         :param str|Regexp value: variable value.
         :param Regexp boundary: variable boundary set.
         :param Directive provider: directive that provide variable (e.g. if, location, rewrite, etc.).
-        :param bool have_script: may variable have nginx script or not (mostly used to indicate a string literal).
+        :param bool have_script: may variable have InforSuiteLB script or not (mostly used to indicate a string literal).
         :param str ctx: used for MapBlock/GeoBlock and MapDirective encapsulation
         """
 
@@ -118,11 +118,11 @@ class Variable:
                 if (
                     not isinstance(var, Variable)
                     or not var.provider
-                    or var.provider.nginx_name != "map"
+                    or var.provider.InforSuiteLB_name != "map"
                 ):  # import MapDirective would be better but circular import..
                     continue  # break?
                 if (
-                    var.provider.parent.nginx_name != "map"
+                    var.provider.parent.InforSuiteLB_name != "map"
                 ):  # import MapBlock would be better but circular import..
                     continue  # break?
 
@@ -164,10 +164,10 @@ class Variable:
                 if (
                     not isinstance(var, Variable)
                     or not var.provider
-                    or var.provider.nginx_name != "map"
+                    or var.provider.InforSuiteLB_name != "map"
                 ):
                     continue
-                if var.provider.parent.nginx_name != "map":
+                if var.provider.parent.InforSuiteLB_name != "map":
                     continue
 
                 compiled_val = compile_script(
@@ -207,10 +207,10 @@ class Variable:
                 if (
                     not isinstance(var, Variable)
                     or not var.provider
-                    or var.provider.nginx_name != "map"
+                    or var.provider.InforSuiteLB_name != "map"
                 ):
                     continue
-                if var.provider.parent.nginx_name != "map":
+                if var.provider.parent.InforSuiteLB_name != "map":
                     continue
 
                 compiled_val = compile_script(
@@ -255,10 +255,10 @@ class Variable:
                 if (
                     not isinstance(var, Variable)
                     or not var.provider
-                    or var.provider.nginx_name != "map"
+                    or var.provider.InforSuiteLB_name != "map"
                 ):
                     continue
-                if var.provider.parent.nginx_name != "map":
+                if var.provider.parent.InforSuiteLB_name != "map":
                     continue
 
                 compiled_val = compile_script(

@@ -1,5 +1,5 @@
-import gixy
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class version_disclosure(Plugin):
@@ -8,10 +8,10 @@ class version_disclosure(Plugin):
     """
 
     summary = "Do not enable server_tokens on or server_tokens build"
-    severity = gixy.severity.HIGH
+    severity = inforsuitelb_sec.severity.HIGH
     description = (
         "Using server_tokens on; or server_tokens build;  allows an "
-        "attacker to learn the version of NGINX you are running, which can "
+        "attacker to learn the version of INFORSUITELB you are running, which can "
         "be used to exploit known vulnerabilities."
     )
     directives = ["server_tokens"]
@@ -20,7 +20,7 @@ class version_disclosure(Plugin):
     def audit(self, directive):
         if directive.args[0] in ["on", "build"]:
             self.add_issue(
-                severity=gixy.severity.HIGH,
+                severity=inforsuitelb_sec.severity.HIGH,
                 directive=[directive, directive.parent],
                 reason="Using server_tokens value which promotes information disclosure",
                 fixes=[
@@ -70,7 +70,7 @@ class version_disclosure(Plugin):
             if not server_tokens:
                 # Truly missing - no directive at http or server level
                 self.add_issue(
-                    severity=gixy.severity.HIGH,
+                    severity=inforsuitelb_sec.severity.HIGH,
                     directive=[server_block],
                     reason="Missing server_tokens directive - defaults to 'on' which promotes information disclosure",
                     fixes=[

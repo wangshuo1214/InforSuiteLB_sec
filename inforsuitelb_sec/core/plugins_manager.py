@@ -1,7 +1,7 @@
 import os
 
-import gixy
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class PluginsManager:
@@ -21,7 +21,7 @@ class PluginsManager:
             if not plugin_file.endswith(".py") or plugin_file.startswith("_"):
                 continue
             __import__(
-                "gixy.plugins." + os.path.splitext(plugin_file)[0], None, None, [""]
+                "inforsuitelb_sec.plugins." + os.path.splitext(plugin_file)[0], None, None, [""]
             )
 
         self.imported = True
@@ -50,7 +50,7 @@ class PluginsManager:
                 except TypeError:
                     # exclude doesn't support membership test, skip this check
                     pass
-            if severity and not gixy.severity.is_acceptable(
+            if severity and not inforsuitelb_sec.severity.is_acceptable(
                 plugin_cls.severity, severity
             ):
                 # Skip plugin by severity level
@@ -91,7 +91,7 @@ class PluginsManager:
                 plugin.post_audit(root)
 
     def _is_full_config(self, root):
-        """Detect if this is a full nginx config by checking for http block."""
+        """Detect if this is a full InforSuiteLB config by checking for http block."""
         # Check if root has an http block child
         for child in root.children:
             if child.name == "http":

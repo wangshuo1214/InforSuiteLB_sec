@@ -1,2 +1,2 @@
-include gixy/formatters/templates/*
+include inforsuitelb_sec/formatters/templates/**
 graft tests

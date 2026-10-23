@@ -1,6 +1,6 @@
-import gixy
-from gixy.directives.directive import AddHeaderDirective
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.directives.directive import AddHeaderDirective
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class add_header_multiline(Plugin):
@@ -14,7 +14,7 @@ class add_header_multiline(Plugin):
     """
 
     summary = "Found a multi-line header."
-    severity = gixy.severity.LOW
+    severity = inforsuitelb_sec.severity.LOW
     description = (
         "Multi-line headers are deprecated (see RFC 7230). "
         "Some clients never supports them (e.g. IE/Edge)."
@@ -35,6 +35,6 @@ class add_header_multiline(Plugin):
                     "incomplete. Ensure the value is fit on a single line"
                 )
                 self.add_issue(
-                    severity=gixy.severity.HIGH, directive=directive, reason=reason
+                    severity=inforsuitelb_sec.severity.HIGH, directive=directive, reason=reason
                 )
                 break

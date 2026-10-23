@@ -1,8 +1,8 @@
 """
-🔥 GIXY Rich Console Formatter 🔥
+🔥 INFORSUITELB_SEC Rich Console Formatter 🔥
 
 A stunning terminal UI that makes security analysis beautiful.
-Optional: requires `rich` library. Install with: pip install gixy-ng[rich]
+Optional: requires `rich` library. Install with: pip install InforSuiteLB_sec[rich]
 """
 
 try:
@@ -19,8 +19,8 @@ except ImportError:
 # Only define the formatter class if Rich is available
 # This prevents it from appearing in --help when Rich isn't installed
 if RICH_AVAILABLE:
-    import gixy
-    from gixy.formatters.base import BaseFormatter
+    import inforsuitelb_sec
+    from inforsuitelb_sec.formatters.base import BaseFormatter
 
     # Severity styling configuration
     SEVERITY_STYLES = {
@@ -55,7 +55,7 @@ if RICH_AVAILABLE:
     }
 
     class Rich_consoleFormatter(BaseFormatter):
-        """Beautiful Rich-based terminal formatter for gixy output."""
+        """Beautiful Rich-based terminal formatter for inforsuitelb_sec output."""
 
         def __init__(self):
             super(Rich_consoleFormatter, self).__init__()
@@ -110,9 +110,9 @@ if RICH_AVAILABLE:
             """Render the awesome header."""
             header_text = Text()
             header_text.append("🛡️  ", style="bold")
-            header_text.append("GIXY", style="bold magenta")
+            header_text.append("INFORSUITELB_SEC", style="bold magenta")
             header_text.append(" Security Scanner", style="bold white")
-            header_text.append(f"  v{gixy.version}", style="dim")
+            header_text.append(f"  v{inforsuitelb_sec.version}", style="dim")
 
             console.print(
                 Panel(
@@ -140,7 +140,7 @@ if RICH_AVAILABLE:
                 Panel(
                     Text.from_markup(
                         "[bold green]✅ No security issues found![/bold green]\n"
-                        "[dim]Your NGINX configuration looks secure.[/dim]"
+                        "[dim]Your INFORSUITELB configuration looks secure.[/dim]"
                     ),
                     box=ROUNDED,
                     style="green",
@@ -194,7 +194,7 @@ if RICH_AVAILABLE:
             if issue.get("config"):
                 config_syntax = Syntax(
                     issue["config"],
-                    "nginx",
+                    "InforSuiteLB",
                     theme="monokai",
                     line_numbers=False,
                     word_wrap=True,
@@ -307,13 +307,10 @@ if RICH_AVAILABLE:
             )
 
         def _render_footer(self, console):
-            """Render the footer with tips."""
+            """Render the footer."""
             console.print(
                 Text.from_markup(
-                    "\n[dim]💡 Need pre-built NGINX modules? "
-                    "[link=https://www.getpagespeed.com/repo-subscribe]"
-                    "[blue underline]getpagespeed.com/repo-subscribe[/blue underline]"
-                    "[/link][/dim]"
+                    "\n[dim]InforSuiteLB_sec — InforSuiteLB configuration security analyzer.[/dim]"
                 ),
                 end="",
             )

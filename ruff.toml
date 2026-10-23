@@ -1,4 +1,4 @@
-# Ruff configuration for gixy
+# Ruff configuration for inforsuitelb_sec
 # Focuses on catching real bugs, not legacy style issues
 
 [lint]
@@ -36,7 +36,7 @@ ignore = [
 
 # Exclude generated/vendored/legacy code
 exclude = [
-    "gixy/core/sre_parse/*",  # Vendored Python sre_parse
+    "inforsuitelb_sec/core/sre_parse/*",  # Vendored Python sre_parse
     "site/*",
     ".git",
     "setup.py",  # Legacy Python 2 compat hacks

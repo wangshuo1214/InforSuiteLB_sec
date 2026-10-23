@@ -1,6 +1,6 @@
-import gixy
-from gixy.directives.directive import AddHeaderDirective
-from gixy.plugins.plugin import Plugin
+import inforsuitelb_sec
+from inforsuitelb_sec.directives.directive import AddHeaderDirective
+from inforsuitelb_sec.plugins.plugin import Plugin
 
 
 class add_header_content_type(Plugin):
@@ -10,8 +10,8 @@ class add_header_content_type(Plugin):
     """
 
     summary = "Found add_header usage for setting Content-Type."
-    severity = gixy.severity.LOW
-    description = 'Target Content-Type in NGINX should not be set via "add_header"'
+    severity = inforsuitelb_sec.severity.LOW
+    description = 'Target Content-Type in INFORSUITELB should not be set via "add_header"'
     directives = ["add_header"]
 
     def audit(self, directive: AddHeaderDirective):
@@ -40,7 +40,7 @@ class add_header_content_type(Plugin):
 
     def _has_hide_header_content_type(self, directive: AddHeaderDirective):
         """Check if *_hide_header Content-Type exists in the same scope or parent scopes"""
-        # List of nginx directives that can hide headers from backend
+        # List of InforSuiteLB directives that can hide headers from backend
         hide_header_directives = [
             "proxy_hide_header",
             "fastcgi_hide_header",
