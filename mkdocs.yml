@@ -1,0 +1,158 @@
+site_name: 'Gixy: NGINX Security & Hardening Analyzer'
+site_description: Gixy is an open source analyzer for NGINX configs that surfaces
+  security flaws, hardening gaps, and performance footguns before they reach production.
+site_url: https://gixy.getpagespeed.com/
+site_author: Danila Vershinin
+repo_url: https://github.com/dvershinin/gixy
+repo_name: dvershinin/gixy
+edit_uri: edit/master/docs/
+copyright: Copyright &copy; 2017-2025 Yandex, Danila Vershinin. All rights reserved.
+theme:
+  name: material
+  language: en
+  custom_dir: docs/overrides
+  logo: gixy.png
+  favicon: favicon.ico
+  palette:
+    scheme: slate
+    primary: teal
+    accent: purple
+  features:
+  - navigation.expand
+  - navigation.tracking
+  - navigation.top
+  - search.highlight
+  - search.share
+  - search.suggest
+  - content.action.edit
+  - content.code.copy
+  - toc.follow
+plugins:
+- search:
+    separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
+    lang:
+    - en
+    - ru
+    - zh
+- i18n:
+    languages:
+    - locale: en
+      name: English
+      default: true
+      build: true
+    - locale: ru
+      name: Русский
+    - locale: zh
+      name: 中文
+    docs_structure: folder
+    reconfigure_material: true
+    fallback_to_default: true
+nav:
+- NGINX Security Scanner: index.md
+- Hardening Guides:
+  - Complete Hardening Guide: nginx-hardening-guide.md
+  - Security Checklist: nginx-security-checklist.md
+  - Security Headers: nginx-security-headers.md
+- Configuration & Usage Guide: configuration.md
+- Custom Variables & Drop-ins: variables-dropins.md
+- CI/CD Integration: ci-cd-integration.md
+- Continuous Monitoring: continuous-monitoring.md
+- IDE Integration: ide-integration.md
+- Security Checks:
+  - checks/ssrf.md
+  - checks/http-splitting.md
+  - checks/origins.md
+  - checks/add-header-redefinition.md
+  - checks/host-spoofing.md
+  - checks/valid-referers.md
+  - checks/add-header-multiline.md
+  - checks/filesystem-root-exposure.md
+  - checks/alias-traversal.md
+  - checks/if-is-evil.md
+  - checks/allow-without-deny.md
+  - checks/add-header-content-type.md
+  - checks/resolver-external.md
+  - checks/proxy-pass-normalized.md
+  - checks/version-disclosure.md
+  - checks/return-bypasses-allow-deny.md
+  - checks/default-server-flag.md
+  - checks/error-log-off.md
+  - checks/hash-without-default.md
+  - checks/unanchored-regex.md
+  - checks/regex-redos.md
+  - checks/invalid-regex.md
+  - checks/nginx-cves.md
+  - checks/missing-resolver.md
+  - checks/hsts-header.md
+  - checks/weak-ssl-tls.md
+  - checks/http2-misdirected-request.md
+  - checks/ssl-stapling-without-resolver.md
+  - checks/ssl-stapling-letsencrypt.md
+  - checks/ssl-ecdh-curve.md
+  - checks/status-page-exposed.md
+  - checks/quic-bpf-reuseport.md
+- Performance Checks:
+  - checks/try-files-is-evil-too.md
+  - checks/worker-rlimit-nofile-vs-connections.md
+  - checks/low-keepalive-requests.md
+  - checks/regex-exact-match.md
+- NGINX Extras RPMs: https://nginx-extras.getpagespeed.com/
+- Blog: https://www.getpagespeed.com/posts
+markdown_extensions:
+- admonition
+- markdown_include.include
+- pymdownx.emoji
+- pymdownx.magiclink
+- pymdownx.superfences
+- pymdownx.tabbed
+- pymdownx.tasklist
+- pymdownx.snippets:
+    base_path:
+    - docs
+    - docs_includes
+    check_paths: true
+- pymdownx.mark
+- pymdownx.details
+- pymdownx.keys
+- attr_list
+- md_in_html
+- abbr
+- def_list
+- footnotes
+- tables
+- meta
+- toc:
+    permalink: true
+    permalink_title: Anchor link to this section
+    toc_depth: 3
+extra_javascript:
+- extra/redirect-en.js
+extra_css:
+- extra.css
+extra:
+  generator: false
+  homepage: https://gixy.getpagespeed.com/
+  social:
+  - icon: fontawesome/brands/github
+    link: https://github.com/dvershinin/gixy
+    name: Gixy on GitHub
+  - icon: fontawesome/brands/python
+    link: https://pypi.org/project/gixy-ng/
+    name: Gixy on PyPI
+  - icon: fontawesome/brands/docker
+    link: https://hub.docker.com/r/getpagespeed/gixy
+    name: Gixy on Docker Hub
+  analytics:
+    provider: google
+    property: G-YZHLYCQK9D
+    feedback:
+      title: Was this page helpful?
+      ratings:
+      - icon: material/emoticon-happy-outline
+        name: This page was helpful
+        data: 1
+        note: Thanks for your feedback!
+      - icon: material/emoticon-sad-outline
+        name: This page could be improved
+        data: 0
+        note: Thanks for your feedback! Help us improve by opening an issue.

@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block htmltitle %}
+{% if page %}
+  {% if page.meta and page.meta.title and not page.is_homepage %}
+    <title>{{ page.meta.title }} | {{ config.site_name }}</title>
+  {% else %}
+    <title>{{ config.site_name }}</title>
+  {% endif %}
+{% else %}
+  <title>Page Not Found | {{ config.site_name }}</title>
+{% endif %}
+{% endblock %}
+
+{% block extrahead %}
+{{ super() }}
+
+{% if page %}
+<!-- Structured Data / JSON-LD Schema -->
+<script type="application/ld+json">
+{% if page.is_homepage %}
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Gixy",
+  "alternateName": [
+    "gixy-ng",
+    "Gixy NGINX configuration checker",
+    "Gixy NGINX security hardening scanner",
+    "Gixy NGINX config checker",
+    "Gixy NGINX configuration hardener",
+    "Gixy NGINX configuration compliance checker"
+  ],
+  "operatingSystem": "Linux, macOS",
+  "applicationCategory": "SecurityApplication",
+  "description": "Open source NGINX config analyzer that spots security flaws, hardening misses, and performance surprises before deployment.",
+  "url": "{{ config.site_url }}",
+  "downloadUrl": "https://pypi.org/project/gixy-ng/",
+  "softwareVersion": "0.2.x",
+  "license": "https://www.mozilla.org/en-US/MPL/2.0/",
+  "author": {
+    "@type": "Person",
+    "name": "Danila Vershinin",
+    "url": "https://www.getpagespeed.com/",
+    "sameAs": [
+      "https://github.com/dvershinin"
+    ]
+  },
+  "contributor": [
+    {
+      "@type": "Organization",
+      "name": "Yandex",
+      "description": "Original creators of Gixy"
+    }
+  ],
+  "offers": {
+    "@type": "Offer",
+    "price": "0.00",
+    "priceCurrency": "USD"
+  },
+  "keywords": [
+    "nginx security",
+    "nginx configuration checker",
+    "nginx hardening",
+    "nginx scanner",
+    "nginx audit",
+    "nginx misconfiguration",
+    "nginx ssrf",
+    "nginx vulnerability scanner",
+    "nginx compliance",
+    "nginx config analyzer"
+  ]
+}
+{% else %}
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "{{ page.title }}",
+  "description": "{% if page.meta and page.meta.description %}{{ page.meta.description }}{% else %}Docs and hardening guidance for the Gixy NGINX analyzer.{% endif %}",
+  "articleSection": "Documentation",
+  "url": "{{ page.canonical_url }}",
+  "author": {
+    "@type": "Person",
+    "name": "Danila Vershinin",
+    "url": "https://www.getpagespeed.com/"
+  },
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "Gixy",
+    "url": "{{ config.site_url }}"
+  }
+}
+{% endif %}
+</script>
+{% endif %}
+
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Gixy - NGINX Security & Hardening Analyzer">
+{% if page %}
+  {% if page.title and not page.is_homepage %}
+    <meta property="og:title" content="{{ page.title }} | {{ config.site_name }}">
+  {% else %}
+    <meta property="og:title" content="Gixy: NGINX Security & Config Hardening Scanner">
+  {% endif %}
+  {% if page.canonical_url %}
+    <meta property="og:url" content="{{ page.canonical_url }}">
+  {% else %}
+    <meta property="og:url" content="{{ config.site_url }}{{ page.url }}">
+  {% endif %}
+  {% if page.meta and page.meta.description %}
+    <meta property="og:description" content="{{ page.meta.description }}">
+  {% else %}
+    <meta property="og:description" content="Open source NGINX config analyzer that finds security risks, hardening gaps, and performance pitfalls before rollout.">
+  {% endif %}
+{% else %}
+  <meta property="og:title" content="Page Not Found | {{ config.site_name }}">
+  <meta property="og:description" content="The page you are looking for does not exist.">
+{% endif %}
+<meta property="og:image" content="{{ config.site_url }}gixy.png">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="{% if page and page.title and not page.is_homepage %}{{ page.title }} | {% endif %}Gixy NGINX Analyzer">
+<meta name="twitter:description" content="{% if page.meta and page.meta.description %}{{ page.meta.description }}{% else %}Open source NGINX analyzer for catching misconfigurations, vulnerabilities, and hardening gaps.{% endif %}">
+<meta name="twitter:image" content="{{ config.site_url }}gixy.png">
+
+<!-- Additional SEO meta tags -->
+<meta name="robots" content="index, follow">
+<meta name="author" content="Danila Vershinin">
+{% if page and page.meta and page.meta.keywords %}
+<meta name="keywords" content="{{ page.meta.keywords }}">
+{% else %}
+<meta name="keywords" content="nginx security, nginx config analyzer, nginx hardening, nginx scanner, nginx audit, nginx misconfiguration, gixy, nginx vulnerability scanner">
+{% endif %}
+
+<!-- Canonical URL -->
+{% if page and page.canonical_url %}
+<link rel="canonical" href="{{ page.canonical_url }}">
+{% endif %}
+
+<!-- Favicons -->
+<link rel="icon" type="image/png" href="{{ config.site_url }}favicon-16x16.png" sizes="16x16">
+<link rel="icon" type="image/png" href="{{ config.site_url }}favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="{{ config.site_url }}favicon-96x96.png" sizes="96x96">
+<link rel="icon" type="image/svg+xml" href="{{ config.site_url }}favicon.svg">
+<link rel="shortcut icon" href="{{ config.site_url }}favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ config.site_url }}apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="Gixy">
+<link rel="manifest" href="{{ config.site_url }}site.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="{{ config.site_url }}web-app-manifest-192x192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="{{ config.site_url }}web-app-manifest-512x512.png">
+{% endblock %}

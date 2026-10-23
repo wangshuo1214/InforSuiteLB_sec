@@ -1,0 +1,47 @@
+# Ruff configuration for gixy
+# Focuses on catching real bugs, not legacy style issues
+
+[lint]
+# Enable sensible defaults
+select = [
+    "E",      # pycodestyle errors
+    "F",      # pyflakes
+    "W",      # pycodestyle warnings
+    "B",      # flake8-bugbear
+    "C4",     # flake8-comprehensions
+    "UP",     # pyupgrade
+    "SIM",    # flake8-simplify
+]
+
+# Ignore rules that would require major refactoring of legacy code
+ignore = [
+    "E501",   # line-too-long (223 occurrences in legacy code)
+    "E711",   # none-comparison (== None vs is None)
+    "F403",   # undefined-local-with-import-star (sre_parse uses star imports)
+    "F405",   # undefined-local-with-import-star-usage
+    "UP008",  # super-call-with-parameters (legacy Python 2 style)
+    "UP021",  # universal-newlines -> text (text requires Python 3.7+, we support 3.6)
+    "UP030",  # format-literals (legacy .format() style)
+    "UP031",  # printf-string-formatting (legacy % style)
+    "SIM102", # collapsible-if (sometimes clearer as-is)
+    "SIM105", # suppressible-exception (contextlib.suppress not always clearer)
+    "SIM103", # needless-bool (sometimes clearer as-is in complex conditions)
+    "SIM108", # if-else-block-instead-of-if-exp (ternary)
+    "SIM110", # reimplemented-builtin (any/all)
+    "E721",   # type-comparison (sometimes intentional)
+    "E722",   # bare-except (legacy code)
+    "B007",   # unused-loop-control-variable (false positives)
+    "B904",   # raise-without-from-inside-except
+]
+
+# Exclude generated/vendored/legacy code
+exclude = [
+    "gixy/core/sre_parse/*",  # Vendored Python sre_parse
+    "site/*",
+    ".git",
+    "setup.py",  # Legacy Python 2 compat hacks
+]
+
+[lint.per-file-ignores]
+# Tests often have stylistic shortcuts
+"tests/*" = ["B", "SIM", "RUF012"]

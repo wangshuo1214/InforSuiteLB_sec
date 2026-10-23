@@ -1,0 +1,23 @@
+{
+  "name": "Gixy - NGINX Security Scanner",
+  "short_name": "Gixy",
+  "description": "Open source NGINX config analyzer for security, hardening, and performance sanity checks",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1e1e2e",
+  "theme_color": "#009688",
+  "icons": [
+    {
+      "src": "/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

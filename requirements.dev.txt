@@ -1,0 +1,8 @@
+pytest>=7.0.0
+coverage>=4.3
+flake8>=3.2
+tox>=2.7.0
+pytest-xdist
+setuptools
+twine
+redoctor>=0.1.5

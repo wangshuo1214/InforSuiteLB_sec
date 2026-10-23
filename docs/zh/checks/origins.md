@@ -1,0 +1,65 @@
+---
+title: "Origin/Referer 校验问题"
+description: "提醒用正则校验 Origin/Referer 容易误放行，可能被构造绕过从而影响 CORS 或点击劫持防护。文章建议使用明确白名单与严格匹配策略，降低误判风险。适用于安全审计与上线前自检，帮助团队统一配置规范、减少误配并降低风险。"
+---
+
+# 引用来源（Referer/Origin）校验问题
+
+_Gixy Check ID: `origins`_
+
+
+在实践中，人们常用正则校验 `Referer` 或 `Origin` 请求头。
+这通常用于设置 `X-Frame-Options`（防点击劫持）或处理跨域（CORS）。
+
+常见错误包括：
+- 正则表达式书写错误；
+- 放行了第三方来源。
+
+> 注意：默认情况下，Gixy 不会检查正则是否允许第三方来源。
+> 你可以通过 `--origins-domains example.com,foo.bar` 传入可信域名列表。启用后，Gixy 会基于 Public Suffix List 以“可注册域”为单位识别来源，并标记那些放行域外值的正则。
+
+### 命令行与配置选项
+
+- `--origins-domains domains`（默认：`*`）：以逗号分隔的可信可注册域名列表。使用 `*` 关闭第三方检查。示例：`--origins-domains example.com,foo.bar`。
+- `--origins-https-only true|false`（默认：`false`）：为 `true` 时，仅允许 `https` 协议的 `Origin`/`Referer`。
+- `--origins-lower-hostname true|false`（默认：`true`）：校验前将主机名转换为小写。
+
+配置示例：
+```
+[origins]
+domains = example.com, example.org
+https-only = true
+```
+
+## 如何发现？
+"简单粗暴" 的办法：
+- 找到所有对 `$http_origin` 或 `$http_referer` 进行校验的 `if` 指令；
+- 确认这些正则没有问题。
+
+错误示例：
+```nginx
+if ($http_origin ~* ((^https://www\.yandex\.ru)|(^https://ya\.ru)$)) {
+	add_header 'Access-Control-Allow-Origin' "$http_origin";
+	add_header 'Access-Control-Allow-Credentials' 'true';
+}
+```
+
+TODO(buglloc): 覆盖正则编写中的典型问题
+TODO(buglloc): Regex Ninja?
+
+## 如何规避？
+- 修正你的正则，或干脆放弃它 :)
+- 如果你对 `Referer` 使用正则校验，那么也可以（不一定）考虑使用 [ngx_http_referer_module](https://nginx.org/en/docs/http/ngx_http_referer_module.htmll)；
+- 对于 `Origin`，通常更好的做法是完全避免正则，而是使用 `map` 白名单：
+
+```nginx
+map $http_origin $allow_origin {
+    ~^https://([A-Za-z0-9\-]+\.)?example\.com(?::[0-9]{1,5})?$ $http_origin;
+    default "";
+}
+add_header Access-Control-Allow-Origin $allow_origin always;
+```
+
+Gixy 已能识别该模式，并会分析用于设置 `Access-Control-Allow-Origin` 的正则 `map` 键。
+
+--8<-- "zh/snippets/nginx-extras-cta.md"

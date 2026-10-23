@@ -1,0 +1,78 @@
+/* Gixy Documentation - Custom Styles */
+
+/* Enhanced logo styling for header */
+.md-header__button.md-logo img,
+.md-header__button.md-logo svg {
+    height: 2.2rem !important;
+    width: auto !important;
+    margin-left: 2.5rem;
+    margin-right: 2.5rem;
+}
+
+/* Mobile navigation logo adjustments */
+.md-nav__title[for="__drawer"] {
+    font-size: 0 !important;
+    line-height: 0 !important;
+}
+
+@media screen and (max-width: 76.2344em) {
+    .md-nav--primary .md-nav__title .md-logo {
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        position: absolute;
+        left: 0.2rem;
+        right: 0.2rem;
+        top: 0.2rem;
+        bottom: 0.2rem;
+        margin: 0.2rem;
+        padding: 0.4rem;
+    }
+}
+
+@media screen and (max-width: 76.2344em) {
+    .md-nav--primary .md-nav__title {
+        height: 0 !important;
+    }
+}
+
+/* Better code block styling */
+.highlight pre {
+    border-radius: 0.4rem;
+}
+
+/* Enhanced admonition styling */
+.md-typeset .admonition,
+.md-typeset details {
+    border-radius: 0.4rem;
+}
+
+/* Plugin pages list styling */
+.md-typeset ul li {
+    margin-bottom: 0.3em;
+}
+
+/* Table of contents improvements */
+.md-sidebar--secondary .md-nav__link {
+    font-size: 0.7rem;
+}
+
+/* Better responsiveness for hero image on home page */
+.md-content img[alt="Gixy logo"],
+.md-content img[alt*="Mascot"] {
+    max-width: 192px;
+    height: auto;
+    margin-left: 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Improve search box appearance */
+.md-search__input {
+    border-radius: 0.3rem;
+}
+
+/* Footer link styling */
+.md-footer-meta__inner {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
