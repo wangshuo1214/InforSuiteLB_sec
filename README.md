@@ -5,28 +5,14 @@ Its main goal is to prevent security misconfiguration and automate flaw detectio
 
 Currently supported Python versions are 3.7 and newer.
 
-> Disclaimer: InforSuiteLB_sec is well tested only on GNU/Linux; other OSs may have some issues.
-
 ## Overview
 
 InforSuiteLB_sec audits your InforSuiteLB configuration for a wide range of
-security issues, including injection & forgery, known CVEs, TLS & encryption
+security issues, including injection & forgery,  TLS & encryption
 problems, filesystem path exposures, header security, access-control gaps,
 DNS/resolver misconfigurations, and performance pitfalls.
 
 It runs locally or in CI/CD on every configuration change.
-
-## Installation
-
-```bash
-pip install InforSuiteLB_sec
-```
-
-Or install from a local checkout in development mode:
-
-```bash
-pip install -e .
-```
 
 ## Usage
 
@@ -42,12 +28,6 @@ Read from stdin:
 cat inforsuitelb.conf | inforsuitelb_sec -
 ```
 
-Enable the CVE advisor for a specific InforSuiteLB version:
-
-```bash
-inforsuitelb_sec --inforsuitelb-version=1.30.6 /etc/inforsuitelb/conf/
-```
-
 ### Useful options
 
 | Option | Description |
@@ -56,7 +36,6 @@ inforsuitelb_sec --inforsuitelb-version=1.30.6 /etc/inforsuitelb/conf/
 | `-l` | List available checks |
 | `-c CONFIG_FILE` | Load defaults from a config file |
 | `--deep` | Enable deep ReDoS analysis (requires the `deep` extra) |
-| `--inforsuitelb-version=X.Y.Z` | Enable the CVE advisor for this version |
 | `--server` | Run in server mode (NDJSON over stdin/stdout) |
 
 Run `inforsuitelb_sec --help` for the full list of options and available checks.
@@ -76,7 +55,3 @@ Install development dependencies and run the test suite:
 pip install -r requirements.dev.txt
 pytest
 ```
-
-## License
-
-Proprietary. See your InforSuiteLB license terms.
