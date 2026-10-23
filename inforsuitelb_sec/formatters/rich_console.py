@@ -202,13 +202,6 @@ if RICH_AVAILABLE:
                 )
                 content_parts.append(config_syntax)
 
-            # Help URL
-            if issue.get("help_url"):
-                link_text = Text()
-                link_text.append("📚 ", style="dim")
-                link_text.append(issue["help_url"], style="underline blue dim")
-                content_parts.append(link_text)
-
             # Combine all content
             panel_content = Group(*content_parts)
 
