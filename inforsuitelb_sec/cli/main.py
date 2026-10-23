@@ -261,7 +261,7 @@ def _get_cli_parser():
         default=False,
         help=(
             "Run slower, more precise structural checks. Currently enables "
-            "ReDoctor hybrid ReDoS analysis (requires InforSuiteLB_sec[deep])."
+            "ReDoctor hybrid ReDoS analysis (requires ReDoctor)."
         ),
     )
 
@@ -452,8 +452,8 @@ def main():
 
     if config.get_for("regex_redos").get("deep") and not REDOCTOR_AVAILABLE:
         sys.stderr.write(
-            "Deep ReDoS analysis requires ReDoctor. "
-            "Install it with: pip install 'InforSuiteLB_sec[deep]'\n"
+            "Deep ReDoS analysis requires the ReDoctor library "
+            "(redoctor>=0.1.5).\n"
         )
         sys.exit(2)
 

@@ -705,7 +705,7 @@ class regex_redos(Plugin):
         "deep": (
             "Use ReDoctor automata and bounded custom-VM fuzzing to find "
             "exponential and higher-degree polynomial ambiguity. Requires "
-            "the InforSuiteLB_sec[deep] extra."
+            "the ReDoctor library."
         )
     }
 

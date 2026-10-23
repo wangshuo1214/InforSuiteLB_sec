@@ -56,7 +56,7 @@ def test_cli_deep_requires_optional_dependency(monkeypatch, capsys, deep_args):
         main()
 
     assert error.value.code == 2
-    assert "InforSuiteLB_sec[deep]" in capsys.readouterr().err
+    assert "ReDoctor" in capsys.readouterr().err
 
 
 def test_cli_help_contains_brand_and_no_upstream_cta(monkeypatch, capsys):

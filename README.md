@@ -49,9 +49,9 @@ Run `inforsuitelb_sec --help` for the full list of options and available checks.
 
 ## Development
 
-Install development dependencies and run the test suite:
+Install the required dependencies (see `requirements.txt` and
+`requirements.dev.txt`) and run the test suite:
 
 ```bash
-pip install -r requirements.dev.txt
 pytest
 ```

@@ -2,7 +2,7 @@
 🔥 INFORSUITELB_SEC Rich Console Formatter 🔥
 
 A stunning terminal UI that makes security analysis beautiful.
-Optional: requires `rich` library. Install with: pip install InforSuiteLB_sec[rich]
+Optional: requires the `rich` library.
 """
 
 try:
