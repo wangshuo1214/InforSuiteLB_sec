@@ -201,9 +201,9 @@ def _get_cli_parser():
         "InforSuiteLB_files",
         nargs="*",
         type=str,
-        default=["/etc/inforsuitelb/inforsuitelb.conf"],
-        metavar="inforsuitelb.conf",
-        help="Path to inforsuitelb.conf, e.g. /etc/inforsuitelb/inforsuitelb.conf",
+        default=["/usr/local/InforSuiteLB/conf/InforSuiteLB.conf"],
+        metavar="InforSuiteLB.conf",
+        help="Path to InforSuiteLB.conf, e.g. /usr/local/InforSuiteLB/conf/InforSuiteLB.conf",
     )
 
     parser.add_argument(
