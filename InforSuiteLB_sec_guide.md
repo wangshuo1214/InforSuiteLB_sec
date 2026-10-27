@@ -1,15 +1,12 @@
 # InforSuiteLB_sec 安全检查详解
 
-> 本文档已与代码（v2.0.3.3，共 **35 个内置检查项**）逐项核对。
-> 每个检查项包含：问题说明、典型示例、修复建议，以及**代码实现逻辑**（该插件在源码中是怎么判定的）。
-
 ## 1. 如何理解 InforSuiteLB_sec
 
 InforSuiteLB_sec 是 InforSuiteLB 配置静态分析器。`InforSuiteLB -t` 主要检查语法和配置可加载性；InforSuiteLB_sec 会进一步检查配置模式是否可能导致 SSRF、响应头注入、路径穿越、访问控制绕过、TLS 加固不足等问题。
 
 - **告警不等于已证实漏洞**：静态分析可能产生误报，也可能无法覆盖运行时逻辑。
 - **未告警不等于安全**：工具只覆盖已实现的规则，不能代替渗透测试和业务逻辑审查。
-- **修复后要验证**：先运行 `InforSuiteLB -t`，再执行 InforSuiteLB_sec，最后通过测试请求和响应头验证真实行为。
+- **修复后要验证**：先运行 `InforSuiteLB -t`，再执行` InforSuiteLB_sec`，最后通过测试请求和响应头验证真实行为。
 
 ## 2. Security Checks 总览
 
@@ -20,21 +17,21 @@ InforSuiteLB_sec 是 InforSuiteLB 配置静态分析器。`InforSuiteLB -t` 主�
 | SSRF | `ssrf` | HIGH | 用户影响上游地址，代理访问非预期目标 |
 | HTTP Response Splitting | `http_splitting` | HIGH | CR/LF 注入响应头或响应内容 |
 | Origin/Referer 校验 | `origins` | LOW / MEDIUM / HIGH | 来源校验正则可被绕过 |
-| `add_header` 重定义 | `add_header_redefinition` | LOW（安全头被丢弃时 MEDIUM） | 子级配置导致安全头丢失 |
+| add_header`重定义 | `add_header_redefinition` | LOW（安全头被丢弃时 MEDIUM） | 子级配置导致安全头丢失 |
 | Host Header Spoofing | `host_spoofing` | MEDIUM | 不可信 Host 影响跳转、缓存或上游逻辑 |
-| `valid_referers` 中的 `none` | `valid_referers` | HIGH | 缺少 Referer 的请求也被允许 |
+| valid_referers`中的 `none | `valid_referers` | HIGH | 缺少 Referer 的请求也被允许 |
 | 多行响应头 | `add_header_multiline` | LOW / HIGH | 动态变量导致响应头注入或头部被截断 |
 | 文件系统根目录暴露 | `filesystem_root_exposure` | MEDIUM | 错误的文件路径映射扩大可访问范围 |
-| Alias 路径穿越 | `alias_traversal` | MEDIUM / HIGH | `alias` 与 `location` 路径拼接不当 |
-| Location 中危险的 `if` | `if_is_evil` | HIGH | rewrite 阶段控制流产生意外行为 |
+| Alias 路径穿越 | `alias_traversal` | MEDIUM / HIGH | alias与 location路径拼接不当 |
+| Location 中危险的 if | `if_is_evil` | HIGH | rewrite 阶段控制流产生意外行为 |
 | Allow 没有 Deny | `allow_without_deny` | HIGH | IP 白名单未形成预期的默认拒绝 |
-| `return` 绕过 Allow/Deny | `return_bypasses_allow_deny` | MEDIUM | 访问控制规则未按预期执行 |
-| 用 `add_header` 设置 Content-Type | `add_header_content_type` | LOW | 头部与实际 MIME 类型不一致 |
-| `proxy_pass` 路径规范化 | `proxy_pass_normalized` | MEDIUM | 前后端对路径解码/规范化理解不同 |
-| `proxy_pass` 静态 DNS 解析 | `missing_resolver` | MEDIUM（命中云厂商域名时 HIGH） | 上游 DNS 变更后地址未按预期刷新 |
+| return`绕过 Allow/Deny | `return_bypasses_allow_deny` | MEDIUM | 访问控制规则未按预期执行 |
+| 用 add_header`设置 Content-Type | `add_header_content_type` | LOW | 头部与实际 MIME 类型不一致 |
+| proxy_pass`路径规范化 | `proxy_pass_normalized` | MEDIUM | 前后端对路径解码/规范化理解不同 |
+| proxy_pass 静态 DNS 解析 | `missing_resolver` | MEDIUM（命中云厂商域名时 HIGH） | 上游 DNS 变更后地址未按预期刷新 |
 | InforSuiteLB 版本泄露 | `version_disclosure` | HIGH | 暴露版本或构建信息，便于指纹识别 |
-| 缺少 `default_server` | `default_server_flag` | LOW | 未匹配 Host 的请求进入非预期站点 |
-| `error_log off` | `error_log_off` | MEDIUM | 关闭错误日志，影响审计和排障 |
+| 缺少 default_server | `default_server_flag` | LOW | 未匹配 Host 的请求进入非预期站点 |
+| error_log off | `error_log_off` | MEDIUM | 关闭错误日志，影响审计和排障 |
 | map/geo 块缺少 default | `hash_without_default` | MEDIUM | 哈希映射块没有兜底值，未知键行为意外 |
 | Location 正则未锚定 | `unanchored_regex` | LOW | 正则意外匹配更广泛 URI、匹配变慢 |
 | ReDoS | `regex_redos` | HIGH | 特制输入导致正则匹配消耗过多 CPU |
@@ -45,12 +42,12 @@ InforSuiteLB_sec 是 InforSuiteLB 配置静态分析器。`InforSuiteLB -t` 主�
 | HTTP/2 421 误导向请求 | `http2_misdirected_request` | LOW | 多域名/连接复用场景处理不当 |
 | OCSP Stapling 缺少 Resolver | `ssl_stapling_without_resolver` | MEDIUM | 证书状态查询无法正常解析 |
 | Let's Encrypt OCSP Stapling | `ssl_stapling_letsencrypt` | LOW | 对证书链/OCSP 配置的适用性提示 |
-| 后量子 `ssl_ecdh_curve` 启动问题 | `ssl_ecdh_curve` | HIGH | 不兼容曲线配置可能导致 InforSuiteLB 无法启动 |
+| 后量子 ssl_ecdh_curve 启动问题 | `ssl_ecdh_curve` | HIGH | 不兼容曲线配置可能导致 InforSuiteLB 无法启动 |
 | Status 页面暴露 | `status_page_exposed` | MEDIUM | 运行状态、连接等信息被未授权访问 |
 | QUIC BPF Reuseport | `quic_bpf_reuseport` | HIGH | 多 worker + QUIC reload 后约 50% 连接被丢 |
-| `keepalive_requests` 过低 | `low_keepalive_requests` | LOW | 长连接复用请求数过少，性能下降 |
+| keepalive_requests`过低 | `low_keepalive_requests` | LOW | 长连接复用请求数过少，性能下降 |
 | 正则 location 可改为精确匹配 | `regex_exact_match` | LOW | 可用更快的精确匹配替代的正则 |
-| `try_files` 未配 `open_file_cache` | `try_files_is_evil_too` | MEDIUM | 每次请求都做文件检查，产生性能开销 |
+| try_files未配 open_file_cache | `try_files_is_evil_too` | MEDIUM | 每次请求都做文件检查，产生性能开销 |
 | rlimit 与连接数不匹配 | `worker_rlimit_nofile_vs_connections` | MEDIUM | 文件句柄数不足导致连接被拒绝 |
 
 ---
@@ -108,17 +105,18 @@ InforSuiteLB_sec 是 InforSuiteLB 配置静态分析器。`InforSuiteLB -t` 主�
 
 - **不推荐配置**
   ```nginx
-  if ($http_origin ~* ((^https://www\.yandex\.ru)|(^https://ya\.ru)$)) {
+  if ($http_origin ~* ((^https://www\.example\.ru)|(^https://ex\.ru)$)) {
       add_header 'Access-Control-Allow-Origin' "$http_origin";
       add_header 'Access-Control-Allow-Credentials' 'true';
   }
   ```
 
 - **建议做法：**
+  
   - 对允许的 scheme、hostname 和必要端口进行精确解析和匹配，而不是只做子串判断。
   - 对状态变更请求使用 CSRF token、SameSite Cookie 等纵深防御。
   - `Origin`/`Referer` 可能缺失或被隐私策略剥离，缺失时应按业务安全模型明确拒绝还是允许，不能无意中放行。
-
+  
 - **代码实现逻辑：** 插件只处理形如 `if ($http_origin ~ ...)` / `if ($http_referer ~ ...)` 的条件（把变量名错写成 `$http_referrer` 会直接报 HIGH）。它用正则"反推"出能匹配该正则的测试字符串，并刻意构造两种恶意变体——后缀拼 `.evil.com`、前缀拼 `evil.com`——再解析这些变体的域名，如果能匹配过你的正则就说明它能被不可信域绕过。另外 `post_audit` 阶段还会识别 `map $http_origin ...` + `add_header Access-Control-Allow-Origin $var` 的组合，走同一套判定。支持 `--origins-domains`（指定你的可信注册域）、`--origins-https-only`、`--origins-lower-hostname` 三个命令行参数。
 
 ### 3.4 `add_header` Redefinition（响应头继承/重定义）
@@ -196,10 +194,10 @@ InforSuiteLB_sec 是 InforSuiteLB 配置静态分析器。`InforSuiteLB -t` 主�
   ```nginx
   add_header Content-Security-Policy "
       default-src: 'none';
-      script-src data: https://yastatic.net;
-      style-src data: https://yastatic.net;
-      img-src data: https://yastatic.net;
-      font-src data: https://yastatic.net;";
+      script-src data: https://example.net;
+      style-src data: https://example.net;
+      img-src data: https://example.net;
+      font-src data: https://example.net;";
 
   more_set_headers -t 'text/html text/plain'
       'X-Foo: Bar
@@ -345,11 +343,12 @@ InforSuiteLB_sec 是 InforSuiteLB 配置静态分析器。`InforSuiteLB -t` 主�
   ```
 
 - **建议做法：**
+  
   - 明确 `proxy_pass` 是否带 URI 部分，并理解其替换规则。
   - 让前端和上游对路径规范化采取一致策略。
   - 不要仅在 InforSuiteLB 上对一个路径字符串做授权，却让上游按不同规则解析。
   - 对编码斜杠、双重编码、点段、重复斜杠等边界情况进行回归测试。
-
+  
 - **代码实现逻辑：** 插件订阅 `proxy_pass`，先确认它位于 HTTP location 内（stream 模块、`=` 精确匹配 location 直接跳过），然后解析出 proxy_pass 里 host 后面是否带了路径。如果带了固定路径，且同 location 内存在 `rewrite ^ $request_uri;`（把原始 URI 原样回写），但 proxy_pass 的路径里没有使用 `$uri` 或 `$1` 这类变量来跟随重写后的 URI，就报 MEDIUM——这是经典的"前端做了解码规范化、上游收到的却是原始编码 URI"的不一致场景。
 
 ### 3.15 `proxy_pass` 静态 DNS 解析/缺少 Resolver
@@ -386,7 +385,7 @@ InforSuiteLB_sec 是 InforSuiteLB 配置静态分析器。`InforSuiteLB -t` 主�
 
 - **代码实现逻辑：** 插件订阅 `server_tokens`：参数为 `on` 或 `build` 直接报 HIGH（附替换为 `off` 的修复）。另外在全配置扫描阶段：如果 http 级没有设置任何 `server_tokens`，就逐个检查每个 server 块——没有显式 `server_tokens off;` 的 server 块（默认值即 `on`）都会补报一条"Missing server_tokens"，并附在 `server {` 后插入 `server_tokens off;` 的修复。
 
-### 3.17 Missing `default_server`（缺少默认虚拟主机）
+### 3.17 Missing default_server（缺少默认虚拟主机）
 
 - **问题说明：** 一个监听地址/端口上的请求如果没有匹配 `server_name`，会由该地址端口的默认 server 处理。若没有显式设置默认站点，配置文件顺序可能决定哪个站点接收未知 Host 请求。
 
@@ -450,7 +449,7 @@ InforSuiteLB_sec 是 InforSuiteLB 配置静态分析器。`InforSuiteLB -t` 主�
 
 ### 3.21 ReDoS（正则表达式拒绝服务）
 
-- **问题说明：** 某些复杂正则在特制输入下会触发大量回溯，消耗 CPU，造成请求延迟甚至服务拒绝。InforSuiteLB 使用 PCRE/PCRE2 的具体行为取决于构建和版本。
+- **问题说明：** 某些复杂正则在特制输入下会触发大量回溯，消耗 CPU，造成请求延迟甚至服务拒绝。
 
 - **高风险模式特征：** 嵌套量词、重叠的重复分组、多个可匹配相同字符的分支，尤其用于匹配攻击者可控的 URI。
 
@@ -461,24 +460,35 @@ InforSuiteLB_sec 是 InforSuiteLB 配置静态分析器。`InforSuiteLB -t` 主�
   location ~ ^/(a+)+$ {
       return 200;
   }
-
+  
   # BAD - nested groups with quantifiers
   location ~ ^/((ab)+)+/files$ {
       return 200;
   }
-
+  
   # BAD - star inside plus
   location ~ ^/(a*)+/path$ {
       return 200;
   }
   ```
 
+  ```nginx
+  server {
+      # ① deep 才能抓出来的（普通模式会漏报）
+      location ~ ^/(a?)*b$ { return 200 "case-1"; }
+  
+      # ② 普通模式会误报、deep 模式能正确放过的
+      location ~ ^/(ba|b)*c$ { return 200 "case-2"; }
+  }
+  ```
+
 - **建议做法：**
+  
   - 简化正则，避免不必要的嵌套重复和歧义。
   - 尽可能用前缀 location、精确匹配或简单字符白名单替代复杂正则。
   - 对 URI 长度和请求速率设置合理限制；不要将其作为修复坏正则的唯一措施。
   - 加 `--deep` 参数可启用更精确的自动机分析（需额外安装 ReDoctor 库）。
-
+  
 - **代码实现逻辑：** 插件从 `location`、`if`、`rewrite`、`server_name`、`map` 五类指令中提取出所有正则表达式（自动识别 `~` / `~*` 大小写不敏感），然后用项目内置的正则解析器（sre_parse）做三类静态检测：(1) 嵌套量词，如 `(a+)+`（指数级回溯）；(2) 重叠分支，如 `(a|ab)+`（多项式回溯）；(3) 相邻重叠贪婪量词，如 `.*.*end`。对有安全边界（首个字符已确定不匹配）的情形会排除以减少误报。命中即报 HIGH。开启 `--regex-redos-deep` 或全局 `--deep` 后，会改用 ReDoctor 自动机 + 有界 fuzzing 做更精确的分析。
 
 ### 3.22 Invalid Regex Capture Groups（无效捕获组）
@@ -697,7 +707,7 @@ InforSuiteLB_sec 是 InforSuiteLB 配置静态分析器。`InforSuiteLB -t` 主�
 
 - **代码实现逻辑：** 插件在全配置扫描阶段工作，三个条件全部满足才报 HIGH（只报一次）：(1) 主上下文有 `quic_bpf on;`；(2) `worker_processes` 显式配置且不等于 1（`auto` 或 >1 都算，未配置则默认为 1，安全跳过）；(3) 任意 server 的 `listen` 参数同时包含 `quic` 和 `reuseport`。附带的自动修复是把 `quic_bpf` 改为 `off`。
 
-### 3.32 `keepalive_requests` 过低（新增）
+### 3.32 `keepalive_requests` 过低
 
 - **问题说明：** `keepalive_requests` 决定一个长连接上最多能复用处理多少个请求。默认值（100）在高并发站点下会导致连接频繁重建、TCP 和 TLS 握手开销增大。
 
@@ -712,7 +722,7 @@ InforSuiteLB_sec 是 InforSuiteLB 配置静态分析器。`InforSuiteLB -t` 主�
 
 - **代码实现逻辑：** 插件订阅 `keepalive_requests`，把参数转成整数，小于硬编码阈值 1000 就报 LOW。提供两个自动修复选项：改成 1000 或改成 10000。注意它只审计当前这条指令本身，不做 http/server/upstream 之间的继承分析。
 
-### 3.33 正则 location 可改为精确匹配（新增）
+### 3.33 正则 location 可改为精确匹配
 
 - **问题说明：** 有些 location 虽然写成正则形式（`location ~ ^/api/health$`），但它实际上精确对应一个固定路径。InforSuiteLB 对 `location = /path` 精确匹配是 O(1) 查表，比逐条正则比对快得多。
 
@@ -727,7 +737,7 @@ InforSuiteLB_sec 是 InforSuiteLB 配置静态分析器。`InforSuiteLB -t` 主�
 
 - **代码实现逻辑：** 插件订阅 `location` 块，只处理大小写敏感的正则 location（`~`；`~*` 不报，因为精确匹配不区分大小写语义不兼容）。把正则反推回字面路径——只有当正则去掉锚点后恰好等价于一个固定字符串（如 `^/api/health$`）时，才报 LOW，并附自动修复：把 `location ~ ^/api/health$` 整行替换为 `location = /api/health`。
 
-### 3.34 `try_files` 未配 `open_file_cache`（新增）
+### 3.34 `try_files` 未配 `open_file_cache`
 
 - **问题说明：** `try_files` 会对每个请求按顺序检查文件是否存在，这在没有启用 `open_file_cache` 时会转化为每请求一次磁盘 stat 系统调用，造成可观的性能开销。
 
@@ -743,7 +753,7 @@ InforSuiteLB_sec 是 InforSuiteLB 配置静态分析器。`InforSuiteLB -t` 主�
 
 - **代码实现逻辑：** 插件订阅 `try_files`，沿当前作用域向上（location → server → http）查找 `open_file_cache` 指令：找不到，或找到但参数为 `off`，就报 MEDIUM。自动修复是在 try_files 后面追加一行 `open_file_cache max=1000 inactive=20s;`（推荐值硬编码）。它只查"有没有开"，不校验 cache 的子参数是否合理。
 
-### 3.35 rlimit 与连接数不匹配（新增）
+### 3.35 rlimit 与连接数不匹配
 
 - **问题说明：** 每个 InforSuiteLB 连接会同时占用读端和写端两个文件描述符，因此 `worker_rlimit_nofile`（进程可打开的文件句柄上限）应至少是 `worker_connections` 的两倍。设置过小或缺失会在高并发下直接拒绝新连接。
 
@@ -758,7 +768,7 @@ InforSuiteLB_sec 是 InforSuiteLB 配置静态分析器。`InforSuiteLB -t` 主�
 - **建议做法：**
   ```nginx
   worker_rlimit_nofile 20480;
-
+  
   events {
       worker_connections 10240;
   }
@@ -778,10 +788,7 @@ InforSuiteLB_sec 是 InforSuiteLB 配置静态分析器。`InforSuiteLB -t` 主�
 inforsuitelb_sec [全局选项] [插件选项] <配置文件> [<配置文件2> ...]
 ```
 
-- 位置参数是一个或多个 **被审计的 InforSuiteLB 配置文件**；不写时默认尝试读 `/usr/local/InforSuiteLB/conf/InforSuiteLB.conf`。
-- 位置参数写 `-` 表示从 **标准输入（stdin）** 读取配置，方便管道使用。
-
-> 本项目推荐用自带虚拟环境运行：`.venv/bin/inforsuitelb_sec ...`（`.venv/bin/` 是 Python 虚拟环境里的可执行文件目录，后面紧跟工具名）。
+- 不写时默认尝试读 `/usr/local/InforSuiteLB/conf/InforSuiteLB.conf`。
 
 ### 4.2 常用参数一览
 
@@ -795,7 +802,7 @@ inforsuitelb_sec [全局选项] [插件选项] <配置文件> [<配置文件2> .
 | `-f {console,text,json,checkstyle}` | 输出格式。终端直连默认 console，管道/重定向默认 text |
 | `-o FILE` | 把报告写入文件而不是屏幕 |
 | `-d`, `--debug` | 开启调试日志（排查解析问题时用） |
-| `--deep` | 深度模式：启用更慢但更精确的检查（当前即 ReDoctor 深度 ReDoS 分析，需安装 ReDoctor 库） |
+| `--deep` | 深度模式：启用更慢但更精确的检查（ReDoctor 深度 ReDoS 分析，需安装 ReDoctor 库） |
 | `--checks a,b,c` | 只运行指定的检查项（逗号分隔） |
 | `--skips a,b,c` | 跳过指定的检查项 |
 | `--disable-includes` | 不展开配置里的 `include` 指令 |
@@ -804,16 +811,6 @@ inforsuitelb_sec [全局选项] [插件选项] <配置文件> [<配置文件2> .
 | `--fix-dry-run` | 只显示将要应用的修复，不修改文件 |
 | `--no-backup` | 配合 `--fix`，不生成 `.bak` 备份 |
 | `--server` | 服务模式：通过 stdin/stdout 以 NDJSON 协议交互（供编辑器/平台集成） |
-
-插件专属参数（只有定义了可调参数的检查才有）：
-
-| 参数 | 说明 | 默认值 |
-|---|---|---|
-| `--regex-redos-deep true/false` | 对 ReDoS 检查启用 ReDoctor 自动机深度分析 | false |
-| `--add-header-redefinition-headers A,B` | 只报告被丢弃的这些响应头（逗号分隔） | 空（全部报告） |
-| `--origins-domains example.com,foo.bar` | 声明你的可信注册域，供 origins 检查判断同源 | `*`（不做第三方域校验） |
-| `--origins-https-only true/false` | origins/referer 只允许 https 协议 | false |
-| `--origins-lower-hostname true/false` | 校验前把域名转小写 | true |
 
 此外：
 
@@ -834,37 +831,37 @@ inforsuitelb_sec [全局选项] [插件选项] <配置文件> [<配置文件2> .
 
 ```bash
 # 1. 最基本：审计项目自带的示例配置
-.venv/bin/inforsuitelb_sec demo_inforsuitelb.conf
+inforsuitelb_sec demo_inforsuitelb.conf
 
 # 2. 只看 HIGH 级别问题（接入 CI 时常用）
-.venv/bin/inforsuitelb_sec -lll /etc/inforsuitelb/inforsuitelb.conf
+inforsuitelb_sec -lll /etc/inforsuitelb/inforsuitelb.conf
 
 # 3. 输出 JSON 到文件，方便脚本或平台解析
-.venv/bin/inforsuitelb_sec -f json demo_inforsuitelb.conf -o report.json
+inforsuitelb_sec -f json demo_inforsuitelb.conf -o report.json
 
 # 4. 只跑某几个检查（逗号分隔检查 ID）
-.venv/bin/inforsuitelb_sec --checks ssrf,weak_ssl_tls demo_inforsuitelb.conf
+inforsuitelb_sec --checks ssrf,weak_ssl_tls demo_inforsuitelb.conf
 
 # 5. 跳过某几个检查
-.venv/bin/inforsuitelb_sec --skips regex_redos,unanchored_regex demo_inforsuitelb.conf
+inforsuitelb_sec --skips regex_redos,unanchored_regex demo_inforsuitelb.conf
 
 # 6. 从 stdin 读取配置（不落地文件，例如远程拉取后审计）
 curl -s http://example.com/inforsuitelb.conf | .venv/bin/inforsuitelb_sec -
 
 # 7. 先预演自动修复（不改文件，只打印 diff）
-.venv/bin/inforsuitelb_sec --fix-dry-run demo_inforsuitelb.conf
+inforsuitelb_sec --fix-dry-run demo_inforsuitelb.conf
 
 # 8. 确认无误后真正应用修复（自动生成 demo_inforsuitelb.conf.bak）
-.venv/bin/inforsuitelb_sec --fix demo_inforsuitelb.conf
+inforsuitelb_sec --fix demo_inforsuitelb.conf
 
 # 9. 深度 ReDoS 分析（需 pip 安装 redoctor）
-.venv/bin/inforsuitelb_sec --deep demo_inforsuitelb.conf
+inforsuitelb_sec --deep demo_inforsuitelb.conf
 
 # 10. 告诉 origins 检查你的可信域名，减少误报
-.venv/bin/inforsuitelb_sec --origins-domains example.com,example.org demo_inforsuitelb.conf
+inforsuitelb_sec --origins-domains example.com,example.org demo_inforsuitelb.conf
 
 # 11. checkstyle 格式输出，接入 CI 静态分析插件
-.venv/bin/inforsuitelb_sec -f checkstyle demo_inforsuitelb.conf
+inforsuitelb_sec -f checkstyle demo_inforsuitelb.conf
 ```
 
 ### 4.5 退出码（用于 CI/CD 判断）
@@ -881,3 +878,41 @@ curl -s http://example.com/inforsuitelb.conf | .venv/bin/inforsuitelb_sec -
 .venv/bin/inforsuitelb_sec -lll -f checkstyle -o report.xml /etc/inforsuitelb/inforsuitelb.conf
 # 退出码非 0 即失败，可据此阻断流水线
 ```
+
+```sh
+.venv/bin/inforsuitelb_sec demo_inforsuitelb.conf; echo "退出码: $?"
+```
+
+
+
+### 补充
+
+-c 配置文件参数说明：
+
+| 参数                          | 说明                                           | 默认值 / 示例                                     |
+| ----------------------------- | ---------------------------------------------- | ------------------------------------------------- |
+| format                        | 输出格式                                       | console / text / json / checkstyle / rich_console |
+| output                        | 报告输出到文件                                 | report.json                                       |
+| level                         | 严重级别过滤（0=ALL，1=LOW，2=MEDIUM，3=HIGH） | 2                                                 |
+| debug                         | 调试模式                                       | true / false                                      |
+| deep                          | 慢速深度检查（ReDoS 分析）                     | true                                              |
+| checks                        | 只跑这些检查（逗号分隔）                       | weak_ssl_tls,header_missing                       |
+| skips                         | 跳过这些检查                                   | regex_redos                                       |
+| disable-includes              | 不处理 include 指令                            | true                                              |
+| vars-dirs                     | 自定义变量目录（逗号分隔）                     | /etc/inforsuitelb/vars                            |
+| fix / fix-dry-run / no-backup | 自动修复相关                                   | true                                              |
+| server                        | server 模式（NDJSON）                          | true                                              |
+
+
+
+--server 说明
+
+```json
+在终端手动敲（每行回车）：
+{"id": 1, "method": "ping"}
+{"id": 2, "method": "analyze", "filename": "x.conf", "content": "ssl_protocols TLSv1;"}
+会回：
+{"id":1,"pong":true,"version":"..."}
+{"id":2,"issues":[{"plugin":"weak_ssl_tls",...}], "error":null}
+```
+
