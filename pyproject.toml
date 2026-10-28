@@ -1,3 +1,43 @@
+# 构建后端：用 setuptools 打包（项目不发布到 PyPI，仅用于本地/CI 可编辑安装）
+[build-system]
+requires = ["setuptools>=42"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "inforsuitelb_sec"
+# 版本号集中在 inforsuitelb_sec/__init__.py 里维护，这里读取同一处
+dynamic = ["version"]
+description = "InforSuiteLB configuration security analyzer"
+readme = "README.md"
+requires-python = ">=3.7"
+dependencies = [
+    "cached-property>=1.2.0; python_version<'3.8'",
+    "Jinja2>=2.8",
+    "ConfigArgParse>=0.11.0",
+]
+
+[project.optional-dependencies]
+# pip install -e ".[tests]" 时安装：跑测试需要的东西
+# （含深度 ReDoS 分析依赖 redoctor，否则 tests/plugins/test_redos_analyzer.py 收集失败）
+tests = [
+    "pytest>=7.0.0",
+    "pytest-xdist",
+    "redoctor>=0.1.5",
+]
+# pip install -e ".[deep]" 时安装：深度 ReDoS 分析（可选）
+deep = [
+    "redoctor>=0.1.5",
+]
+
+[project.scripts]
+# 安装后生成 .venv/bin/inforsuitelb_sec 命令
+inforsuitelb_sec = "inforsuitelb_sec.cli.main:main"
+
+[tool.setuptools.dynamic]
+# 从 inforsuitelb_sec/__init__.py 里读取 version = "..."
+# （该文件在构建时被 import 只会加载纯常量，不依赖第三方包）
+version = { attr = "inforsuitelb_sec.version" }
+
 # Bandit security scanner configuration
 # This catches security issues similar to SonarCloud
 
